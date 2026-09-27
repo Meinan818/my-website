@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>待办看板 · Task Board</title>
+    <link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --paper: #f4efe4;
+            --paper-2: #ede6d6;
+            --ink: #2e2a23;
+            --ink-soft: #6b6354;
+            --line: #d8cfbb;
+            --todo: #c96442;
+            --doing: #c99a3f;
+            --done: #6f8f5b;
+            --card: #fffdf7;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--paper);
+            background-image:
+                radial-gradient(circle at 15% 20%, rgba(201,100,66,0.04), transparent 40%),
+                radial-gradient(circle at 85% 80%, rgba(111,143,91,0.05), transparent 40%);
+            color: var(--ink);
+            min-height: 100vh;
+        }
+
+        /* 顶部：报纸/手账风格标题，不用导航栏 */
+        .masthead {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 32px 28px 20px;
+            border-bottom: 3px double var(--line);
+        }
+
+        .masthead-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font-size: 0.8rem;
+            color: var(--ink-soft);
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .masthead h1 {
+            font-family: 'Noto Serif SC', serif;
+            font-weight: 900;
+            font-size: 2.4rem;
+            letter-spacing: 4px;
+            text-align: center;
+        }
+
+        .masthead h1 .accent { color: var(--todo); }
+
+        .masthead-sub {
+            text-align: center;
+            color: var(--ink-soft);
+            font-size: 0.9rem;
+            margin-top: 8px;
+            font-style: italic;
+            font-family: 'Noto Serif SC', serif;
+        }
+
+        /* 添加任务区 */
+        .composer {
+            max-width: 1280px;
+            margin: 22px auto 0;
+            padding: 0 28px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .composer input[type="text"] {
+            flex: 1;
+            min-width: 220px;
+            padding: 13px 16px;
+            border: 1.5px solid var(--line);
+            background: var(--card);
+            border-radius: 2px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            color: var(--ink);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .composer input[type="text"]:focus { border-color: var(--todo); }
+
+        .priority-pick {
+            display: flex;
+            gap: 6px;
+        }
+
+        .priority-pick label {
+            cursor: pointer;
+            padding: 11px 14px;
+            border: 1.5px solid var(--line);
+            border-radius: 2px;
+            font-size: 0.85rem;
+            background: var(--card);
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .priority-pick input { display: none; }
+        .priority-pick input:checked + span { font-weight: 700; }
+
+        .priority-pick label:has(input[value="high"]:checked) { border-color: var(--todo); background: #f7e8e2; }
+        .priority-pick label:has(input[value="mid"]:checked) { border-color: var(--doing); background: #f6eedd; }
+        .priority-pick label:has(input[value="low"]:checked) { border-color: var(--done); background: #eaf0e4; }
+
+        .add-btn {
+            padding: 13px 26px;
+            background: var(--ink);
+            color: var(--paper);
+            border: none;
+            border-radius: 2px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: all 0.2s;
+        }
+
+        .add-btn:hover { background: var(--todo); }
+
+        /* 看板 */
+        .board {
+            max-width: 1280px;
+            margin: 24px auto 40px;
+            padding: 0 28px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            align-items: start;
+        }
+
+        .column {
+            background: var(--paper-2);
+            border-radius: 4px;
+            padding: 16px;
+            min-height: 300px;
+        }
+
+        .column.drag-over { outline: 2px dashed var(--ink-soft); outline-offset: -4px; }
+
+        .col-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 12px;
+            margin-bottom: 14px;
+            border-bottom: 2px solid var(--ink);
+        }
+
+        .col-head .col-title {
+            font-family: 'Noto Serif SC', serif;
+            font-weight: 700;
+            font-size: 1.15rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .col-dot { width: 11px; height: 11px; border-radius: 50%; }
+        .col-todo .col-dot { background: var(--todo); }
+        .col-doing .col-dot { background: var(--doing); }
+        .col-done .col-dot { background: var(--done); }
+
+        .col-count {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 0.85rem;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 2px 11px;
+            color: var(--ink-soft);
+        }
+
+        /* 任务卡 */
+        .task {
+            background: var(--card);
+            border-radius: 3px;
+            padding: 13px 14px 13px 17px;
+            margin-bottom: 12px;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(46,42,35,0.08);
+            cursor: grab;
+            transition: box-shadow 0.2s, transform 0.15s;
+            animation: cardIn 0.3s ease;
+        }
+
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .task:hover { box-shadow: 0 4px 12px rgba(46,42,35,0.13); }
+        .task:active { cursor: grabbing; }
+        .task.dragging { opacity: 0.4; }
+
+        .task::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 8px; bottom: 8px;
+            width: 4px;
+            border-radius: 2px;
+        }
+        .task.p-high::before { background: var(--todo); }
+        .task.p-mid::before { background: var(--doing); }
+        .task.p-low::before { background: var(--done); }
+
+        .task-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .task-text {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            flex: 1;
+            word-break: break-word;
+        }
+
+        .col-done .task-text {
+            color: var(--ink-soft);
+            text-decoration: line-through;
+            text-decoration-color: var(--done);
+            text-decoration-thickness: 2px;
+        }
+
+        .task-del {
+            background: none;
+            border: none;
+            color: #b3a890;
+            cursor: pointer;
+            font-size: 1.1rem;
+            line-height: 1;
+            padding: 2px;
+            flex-shrink: 0;
+            transition: color 0.2s;
+        }
+
+        .task-del:hover { color: var(--todo); }
+
+        .task-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 9px;
+        }
+
+        .badge {
+            font-size: 0.72rem;
+            padding: 2px 9px;
+            border-radius: 20px;
+            letter-spacing: 1px;
+        }
+        .p-high .badge { background: #f7e8e2; color: var(--todo); }
+        .p-mid .badge { background: #f6eedd; color: #a87d28; }
+        .p-low .badge { background: #eaf0e4; color: var(--done); }
+
+        .task-date { font-size: 0.75rem; color: #b3a890; }
+
+        /* 移动按钮（手机上切换状态） */
+        .move-btns { display: flex; gap: 5px; margin-left: auto; }
+        .move-btn {
+            border: 1px solid var(--line);
+            background: var(--paper);
+            border-radius: 3px;
+            font-size: 0.72rem;
+            padding: 3px 8px;
+            cursor: pointer;
+            color: var(--ink-soft);
+            font-family: inherit;
+        }
+        .move-btn:hover { border-color: var(--ink); color: var(--ink); }
+
+        .col-empty {
+            text-align: center;
+            color: #b3a890;
+            font-size: 0.88rem;
+            padding: 30px 10px;
+            font-family: 'Noto Serif SC', serif;
+            font-style: italic;
+        }
+
+        .hint {
+            max-width: 1280px;
+            margin: 16px auto 0;
+            padding: 0 28px;
+            font-size: 0.8rem;
+            color: #b3a890;
+        }
+
+        @media (max-width: 860px) {
+            .board { grid-template-columns: 1fr; }
+            .masthead h1 { font-size: 1.7rem; letter-spacing: 2px; }
+            .masthead-top { flex-direction: column; gap: 4px; align-items: center; }
+            .composer { row-gap: 10px; margin-top: 18px; }
+            .composer .add-btn { width: 100%; }
+            .priority-pick { width: 100%; justify-content: space-between; }
+            .priority-pick label { flex: 1; text-align: center; }
+            .hint { margin-top: 12px; line-height: 1.6; }
+        }
+    </style>
+    <style>[data-custom-element*="watermark"]{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}</style>
+</head>
+<body>
+    <header class="masthead">
+        <div class="masthead-top">
+            <span id="todayDate"></span>
+            <span>MY TASK BOARD · 待办看板</span>
+        </div>
+        <h1>今日<span class="accent">待办</span>看板</h1>
+        <div class="masthead-sub">「 凡事预则立，不预则废 」</div>
+    </header>
+
+    <!-- 新建任务 -->
+    <div class="composer">
+        <input type="text" id="taskInput" placeholder="写下一件要做的事，回车快速添加..." onkeydown="if(event.key==='Enter')addTask()">
+        <div class="priority-pick">
+            <label><input type="radio" name="pri" value="high" checked><span>高优先</span></label>
+            <label><input type="radio" name="pri" value="mid"><span>中优先</span></label>
+            <label><input type="radio" name="pri" value="low"><span>低优先</span></label>
+        </div>
+        <button class="add-btn" onclick="addTask()">＋ 添加</button>
+    </div>
+    <div class="hint">提示：电脑端可直接拖动卡片到其他列，手机端用卡片上的「← →」按钮移动。</div>
+
+    <!-- 看板三列 -->
+    <main class="board">
+        <section class="column col-todo" data-status="todo"
+            ondragover="event.preventDefault();this.classList.add('drag-over')"
+            ondragleave="this.classList.remove('drag-over')"
+            ondrop="dropTask(event,'todo')">
+            <div class="col-head">
+                <div class="col-title"><span class="col-dot"></span>待办</div>
+                <span class="col-count" id="count-todo">0</span>
+            </div>
+            <div class="col-body" id="list-todo"></div>
+        </section>
+
+        <section class="column col-doing" data-status="doing"
+            ondragover="event.preventDefault();this.classList.add('drag-over')"
+            ondragleave="this.classList.remove('drag-over')"
+            ondrop="dropTask(event,'doing')">
+            <div class="col-head">
+                <div class="col-title"><span class="col-dot"></span>进行中</div>
+                <span class="col-count" id="count-doing">0</span>
+            </div>
+            <div class="col-body" id="list-doing"></div>
+        </section>
+
+        <section class="column col-done" data-status="done"
+            ondragover="event.preventDefault();this.classList.add('drag-over')"
+            ondragleave="this.classList.remove('drag-over')"
+            ondrop="dropTask(event,'done')">
+            <div class="col-head">
+                <div class="col-title"><span class="col-dot"></span>已完成</div>
+                <span class="col-count" id="count-done">0</span>
+            </div>
+            <div class="col-body" id="list-done"></div>
+        </section>
+    </main>
+
+    <script>
+        const KEY = 'my_task_board';
+        let tasks = [];
+        let dragId = null;
+
+        const priText = { high: '高优先', mid: '中优先', low: '低优先' };
+        const order = { todo: 0, doing: 1, done: 2 };
+
+        // 日期
+        const d = new Date();
+        const week = ['日','一','二','三','四','五','六'];
+        document.getElementById('todayDate').textContent =
+            `${d.getFullYear()} 年 ${d.getMonth()+1} 月 ${d.getDate()} 日 · 星期${week[d.getDay()]}`;
+
+        function load() {
+            const saved = localStorage.getItem(KEY);
+            if (saved) {
+                tasks = JSON.parse(saved);
+            } else {
+                // 示例任务
+                tasks = [
+                    { id: 1, text: '完成数据结构课程设计报告', status: 'doing', pri: 'high', date: '今天' },
+                    { id: 2, text: '刷 3 道 LeetCode 算法题', status: 'todo', pri: 'mid', date: '今天' },
+                    { id: 3, text: '复习计算机网络第三章', status: 'todo', pri: 'low', date: '今天' },
+                    { id: 4, text: '搭建个人项目集网站', status: 'done', pri: 'high', date: '昨天' }
+                ];
+                persist();
+            }
+        }
+
+        function persist() {
+            localStorage.setItem(KEY, JSON.stringify(tasks));
+        }
+
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            const text = input.value.trim();
+            if (!text) { input.focus(); return; }
+            const pri = document.querySelector('input[name="pri"]:checked').value;
+            tasks.unshift({
+                id: Date.now(),
+                text: text,
+                status: 'todo',
+                pri: pri,
+                date: '刚刚'
+            });
+            input.value = '';
+            persist();
+            render();
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            persist();
+            render();
+        }
+
+        function moveTask(id, status) {
+            const t = tasks.find(t => t.id === id);
+            if (t) { t.status = status; persist(); render(); }
+        }
+
+        // 拖拽
+        function dragStart(id, ev) {
+            dragId = id;
+            ev.target.classList.add('dragging');
+        }
+        function dragEnd(ev) {
+            ev.target.classList.remove('dragging');
+            document.querySelectorAll('.column').forEach(c => c.classList.remove('drag-over'));
+        }
+        function dropTask(ev, status) {
+            ev.preventDefault();
+            document.querySelectorAll('.column').forEach(c => c.classList.remove('drag-over'));
+            if (dragId !== null) moveTask(dragId, status);
+            dragId = null;
+        }
+
+        function escapeHtml(s) {
+            const div = document.createElement('div');
+            div.textContent = s;
+            return div.innerHTML;
+        }
+
+        function render() {
+            ['todo','doing','done'].forEach(status => {
+                const list = tasks.filter(t => t.status === status);
+                const el = document.getElementById('list-' + status);
+                document.getElementById('count-' + status).textContent = list.length;
+
+                if (list.length === 0) {
+                    const emptyText = { todo: '还没有待办，添加一个吧', doing: '没有进行中的任务', done: '完成的任务会出现在这里' }[status];
+                    el.innerHTML = `<div class="col-empty">${emptyText}</div>`;
+                    return;
+                }
+
+                // 按优先级排序
+                const priOrder = { high: 0, mid: 1, low: 2 };
+                list.sort((a,b) => priOrder[a.pri] - priOrder[b.pri]);
+
+                el.innerHTML = list.map(t => {
+                    const cur = order[status];
+                    const statusKeys = ['todo','doing','done'];
+                    let moveHtml = '<div class="move-btns">';
+                    if (cur > 0) moveHtml += `<button class="move-btn" onclick="moveTask(${t.id},'${statusKeys[cur-1]}')">←</button>`;
+                    if (cur < 2) moveHtml += `<button class="move-btn" onclick="moveTask(${t.id},'${statusKeys[cur+1]}')">→</button>`;
+                    moveHtml += '</div>';
+
+                    return `
+                    <div class="task p-${t.pri}" draggable="true"
+                         ondragstart="dragStart(${t.id},event)" ondragend="dragEnd(event)">
+                        <div class="task-top">
+                            <div class="task-text">${escapeHtml(t.text)}</div>
+                            <button class="task-del" onclick="deleteTask(${t.id})" title="删除">×</button>
+                        </div>
+                        <div class="task-meta">
+                            <span class="badge">${priText[t.pri]}</span>
+                            <span class="task-date">${t.date}</span>
+                            ${moveHtml}
+                        </div>
+                    </div>`;
+                }).join('');
+            });
+        }
+
+        load();
+        render();
+    </script>
+</body>
+</html>

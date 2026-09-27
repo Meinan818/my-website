@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNAKE · 复古街机贪吃蛇</title>
+    <link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Press+Start+2P&display=swap">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0b0e14;
+            --panel: #141926;
+            --neon: #39ff14;
+            --neon-dim: #1f8a10;
+            --cyan: #00f0ff;
+            --pink: #ff2e88;
+            --yellow: #ffe600;
+            --text: #c8f7c5;
+        }
+
+        body {
+            font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            background-image:
+                radial-gradient(circle at 50% 0%, rgba(57,255,20,0.06), transparent 60%);
+            min-height: 100vh;
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        /* CRT 扫描线全局效果 */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0,0,0,0.15) 0px,
+                rgba(0,0,0,0.15) 1px,
+                transparent 1px,
+                transparent 3px
+            );
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .pixel { font-family: 'Press Start 2P', monospace; }
+
+        /* 街机标题 */
+        .arcade-title {
+            margin-top: 26px;
+            text-align: center;
+        }
+        .arcade-title h1 {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 2rem;
+            color: var(--neon);
+            text-shadow:
+                0 0 8px rgba(57,255,20,0.8),
+                0 0 24px rgba(57,255,20,0.5),
+                4px 4px 0 var(--pink);
+            letter-spacing: 2px;
+            animation: flicker 3s infinite;
+        }
+        @keyframes flicker {
+            0%, 96%, 100% { opacity: 1; }
+            97% { opacity: 0.6; }
+            98% { opacity: 1; }
+        }
+        .arcade-title p {
+            margin-top: 12px;
+            color: #6b8a78;
+            font-size: 0.82rem;
+            letter-spacing: 3px;
+        }
+
+        /* 分数面板：街机数码管风格 */
+        .scoreboard {
+            display: flex;
+            gap: 14px;
+            margin: 22px 0 18px;
+        }
+        .score-box {
+            background: #05070b;
+            border: 2px solid var(--neon-dim);
+            box-shadow: 0 0 12px rgba(57,255,20,0.2), inset 0 0 12px rgba(57,255,20,0.08);
+            padding: 12px 22px;
+            text-align: center;
+            min-width: 120px;
+        }
+        .score-box .lab {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.55rem;
+            color: var(--cyan);
+            margin-bottom: 9px;
+            letter-spacing: 1px;
+        }
+        .score-box .val {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 1.3rem;
+            color: var(--neon);
+            text-shadow: 0 0 10px rgba(57,255,20,0.7);
+        }
+
+        /* 游戏屏幕：街机框体 */
+        .screen-frame {
+            background: #05070b;
+            border: 3px solid #2a3a2a;
+            border-radius: 10px;
+            padding: 12px;
+            box-shadow:
+                0 0 0 4px #111,
+                0 0 30px rgba(57,255,20,0.25),
+                inset 0 0 30px rgba(0,0,0,0.8);
+            position: relative;
+        }
+        #gameCanvas {
+            display: block;
+            background: #06120a;
+            image-rendering: pixelated;
+        }
+
+        /* 控制按钮 */
+        .controls { display: flex; gap: 12px; margin: 20px 0 10px; }
+        .arcade-btn {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 0.72rem;
+            padding: 14px 22px;
+            background: var(--panel);
+            color: var(--neon);
+            border: 2px solid var(--neon);
+            cursor: pointer;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 0 var(--neon-dim), 0 0 12px rgba(57,255,20,0.3);
+            transition: all 0.1s;
+        }
+        .arcade-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 var(--neon-dim);
+        }
+        .arcade-btn.pink {
+            color: var(--pink);
+            border-color: var(--pink);
+            box-shadow: 0 4px 0 #8a1746, 0 0 12px rgba(255,46,136,0.3);
+        }
+        .arcade-btn.pink:active { box-shadow: 0 0 0 #8a1746; }
+
+        /* 手机方向键：十字键 */
+        .dpad {
+            display: none;
+            grid-template-columns: repeat(3, 64px);
+            grid-template-rows: repeat(3, 64px);
+            gap: 6px;
+            margin: 14px 0 30px;
+        }
+        .dpad button {
+            background: var(--panel);
+            border: 2px solid var(--neon-dim);
+            color: var(--neon);
+            font-size: 1.4rem;
+            cursor: pointer;
+            border-radius: 6px;
+            box-shadow: 0 3px 0 #0a0d14;
+        }
+        .dpad button:active { background: var(--neon-dim); color: #fff; }
+        .du { grid-column: 2; grid-row: 1; }
+        .dl { grid-column: 1; grid-row: 2; }
+        .dr { grid-column: 3; grid-row: 2; }
+        .dd { grid-column: 2; grid-row: 3; }
+        .dpad-center {
+            grid-column: 2; grid-row: 2;
+            background: #05070b;
+            border: 2px solid #1a2a1a;
+            border-radius: 50%;
+        }
+
+        .key-hint {
+            color: #5a7a60;
+            font-size: 0.78rem;
+            margin-top: 6px;
+            letter-spacing: 1px;
+        }
+
+        /* GAME OVER 弹窗 */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(5,7,11,0.88);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .overlay.show { display: flex; }
+        .gameover-card {
+            background: var(--panel);
+            border: 3px solid var(--pink);
+            box-shadow: 0 0 40px rgba(255,46,136,0.4);
+            padding: 36px 44px;
+            text-align: center;
+            animation: pop 0.3s steps(4);
+        }
+        @keyframes pop {
+            from { transform: scale(0.7); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .gameover-card h2 {
+            font-family: 'Press Start 2P', monospace;
+            color: var(--pink);
+            font-size: 1.3rem;
+            text-shadow: 0 0 12px rgba(255,46,136,0.7);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .gameover-card .final {
+            color: var(--text);
+            margin-bottom: 24px;
+            font-size: 0.9rem;
+        }
+        .gameover-card .final b {
+            font-family: 'Press Start 2P', monospace;
+            color: var(--yellow);
+            font-size: 1.4rem;
+        }
+
+        @media (max-width: 768px) {
+            .dpad { display: grid; }
+            .key-hint { display: none; }
+            .arcade-title h1 { font-size: 1.3rem; }
+            #gameCanvas { width: 300px; height: 300px; }
+            .score-box { padding: 10px 14px; min-width: 100px; }
+        }
+    </style>
+    <style>[data-custom-element*="watermark"]{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}</style>
+</head>
+<body>
+    <div class="arcade-title">
+        <h1>SNAKE</h1>
+        <p>复 古 街 机 · 吃 豆 变 长</p>
+    </div>
+
+    <div class="scoreboard">
+        <div class="score-box">
+            <div class="lab">SCORE</div>
+            <div class="val" id="currentScore">0</div>
+        </div>
+        <div class="score-box">
+            <div class="lab">BEST</div>
+            <div class="val" id="highScore">0</div>
+        </div>
+    </div>
+
+    <div class="screen-frame">
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+    </div>
+
+    <div class="controls">
+        <button class="arcade-btn" id="startBtn" onclick="startGame()">START</button>
+        <button class="arcade-btn pink" id="pauseBtn" onclick="pauseGame()" style="display:none;">PAUSE</button>
+        <button class="arcade-btn" id="muteBtn" onclick="toggleMute()">🔊 SOUND</button>
+    </div>
+
+    <div class="dpad">
+        <button class="du" onclick="changeDirection(0,-1)">▲</button>
+        <button class="dl" onclick="changeDirection(-1,0)">◀</button>
+        <div class="dpad-center"></div>
+        <button class="dr" onclick="changeDirection(1,0)">▶</button>
+        <button class="dd" onclick="changeDirection(0,1)">▼</button>
+    </div>
+
+    <div class="key-hint">方向键 / WASD 移动 · 空格暂停</div>
+
+    <div class="overlay" id="gameOverOverlay">
+        <div class="gameover-card">
+            <h2>GAME<br>OVER</h2>
+            <div class="final">最终得分 <b id="finalScore">0</b></div>
+            <button class="arcade-btn" onclick="startGame()">RETRY</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const gridSize = 20;
+        const tileCount = canvas.width / gridSize;
+
+        let snake = [], food = {}, direction = {x:1,y:0}, nextDirection = {x:1,y:0};
+        let score = 0, gameLoop = null, gameSpeed = 150, isPlaying = false;
+        let highScore = localStorage.getItem('retroSnakeBest') || 0;
+        document.getElementById('highScore').textContent = highScore;
+
+        // ===== 音效（Web Audio 实时合成，无需外部音频文件）=====
+        let audioCtx = null;
+        let muted = localStorage.getItem('retroSnakeMuted') === '1';
+        function ensureCtx() {
+            if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        }
+        function beep(f1, f2, dur, type, vol, delay) {
+            if (muted) return;
+            ensureCtx(); if (!audioCtx) return;
+            const t0 = audioCtx.currentTime + (delay || 0);
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type || 'square';
+            osc.frequency.setValueAtTime(f1, t0);
+            if (f2 !== f1) osc.frequency.exponentialRampToValueAtTime(Math.max(1, f2), t0 + dur);
+            gain.gain.setValueAtTime(vol || 0.05, t0);
+            gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(t0); osc.stop(t0 + dur + 0.02);
+        }
+        const sfx = {
+            eat()   { beep(520, 920, 0.09, 'square', 0.05); },
+            turn()  { beep(200, 180, 0.03, 'triangle', 0.012); },
+            start() { beep(440,440,0.08,'square',0.05,0); beep(660,660,0.08,'square',0.05,0.09); beep(880,880,0.13,'square',0.05,0.18); },
+            die()   { beep(320, 60, 0.5, 'sawtooth', 0.07); }
+        };
+        function toggleMute() {
+            muted = !muted;
+            localStorage.setItem('retroSnakeMuted', muted ? '1' : '0');
+            document.getElementById('muteBtn').textContent = muted ? '🔇 MUTED' : '🔊 SOUND';
+            if (!muted) { ensureCtx(); sfx.eat(); }
+        }
+        document.getElementById('muteBtn').textContent = muted ? '🔇 MUTED' : '🔊 SOUND';
+
+        function initGame() {
+            snake = [{x:5,y:10},{x:4,y:10},{x:3,y:10}];
+            direction = {x:1,y:0}; nextDirection = {x:1,y:0};
+            score = 0; gameSpeed = 150;
+            document.getElementById('currentScore').textContent = score;
+            spawnFood();
+        }
+
+        function spawnFood() {
+            food = { x: Math.floor(Math.random()*tileCount), y: Math.floor(Math.random()*tileCount) };
+            while (snake.some(s => s.x===food.x && s.y===food.y)) {
+                food = { x: Math.floor(Math.random()*tileCount), y: Math.floor(Math.random()*tileCount) };
+            }
+        }
+
+        function drawGame() {
+            // 背景
+            ctx.fillStyle = '#06120a';
+            ctx.fillRect(0,0,canvas.width,canvas.height);
+            // 网格点
+            ctx.fillStyle = 'rgba(57,255,20,0.05)';
+            for (let i=0;i<tileCount;i++) for (let j=0;j<tileCount;j++) {
+                ctx.fillRect(i*gridSize+9, j*gridSize+9, 2, 2);
+            }
+
+            // 食物（闪烁的像素豆）
+            const pulse = Math.sin(Date.now()/200)*0.3+0.7;
+            ctx.fillStyle = '#ff2e88';
+            ctx.shadowColor = '#ff2e88';
+            ctx.shadowBlur = 12 * pulse;
+            ctx.fillRect(food.x*gridSize+3, food.y*gridSize+3, gridSize-6, gridSize-6);
+            ctx.shadowBlur = 0;
+
+            // 蛇（像素块 + 发光）
+            snake.forEach((seg, i) => {
+                if (i === 0) {
+                    ctx.fillStyle = '#39ff14';
+                    ctx.shadowColor = '#39ff14';
+                    ctx.shadowBlur = 10;
+                } else {
+                    const g = 255 - i*8;
+                    ctx.fillStyle = `rgb(${30+i*4}, ${Math.max(g,120)}, ${20})`;
+                    ctx.shadowBlur = 0;
+                }
+                ctx.fillRect(seg.x*gridSize+1, seg.y*gridSize+1, gridSize-2, gridSize-2);
+            });
+            ctx.shadowBlur = 0;
+
+            // 蛇眼睛
+            const head = snake[0];
+            ctx.fillStyle = '#06120a';
+            const ex = head.x*gridSize + gridSize/2 + direction.x*4;
+            const ey = head.y*gridSize + gridSize/2 + direction.y*4;
+            ctx.fillRect(ex-4, ey-3, 3, 3);
+            ctx.fillRect(ex+1, ey-3, 3, 3);
+        }
+
+        function step() {
+            direction = {...nextDirection};
+            const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+
+            if (head.x<0 || head.x>=tileCount || head.y<0 || head.y>=tileCount) return gameOver();
+            if (snake.some(s => s.x===head.x && s.y===head.y)) return gameOver();
+
+            snake.unshift(head);
+            if (head.x===food.x && head.y===food.y) {
+                score += 10;
+                document.getElementById('currentScore').textContent = score;
+                sfx.eat();
+                spawnFood();
+                if (gameSpeed > 80) {
+                    gameSpeed -= 5;
+                    clearInterval(gameLoop);
+                    gameLoop = setInterval(loop, gameSpeed);
+                }
+            } else {
+                snake.pop();
+            }
+            drawGame();
+        }
+
+        // 持续渲染让食物闪烁
+        function loop() { step(); }
+        let renderTimer;
+
+        function startGame() {
+            document.getElementById('gameOverOverlay').classList.remove('show');
+            initGame();
+            drawGame();
+            isPlaying = true;
+            sfx.start();
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('pauseBtn').style.display = 'inline-block';
+            document.getElementById('pauseBtn').textContent = 'PAUSE';
+            clearInterval(gameLoop);
+            clearInterval(renderTimer);
+            gameLoop = setInterval(loop, gameSpeed);
+            renderTimer = setInterval(() => { if (isPlaying) drawGame(); }, 100);
+        }
+
+        function pauseGame() {
+            if (isPlaying) {
+                clearInterval(gameLoop);
+                isPlaying = false;
+                document.getElementById('pauseBtn').textContent = 'RESUME';
+            } else {
+                isPlaying = true;
+                document.getElementById('pauseBtn').textContent = 'PAUSE';
+                gameLoop = setInterval(loop, gameSpeed);
+            }
+        }
+
+        function gameOver() {
+            clearInterval(gameLoop);
+            clearInterval(renderTimer);
+            isPlaying = false;
+            sfx.die();
+            document.getElementById('pauseBtn').style.display = 'none';
+            document.getElementById('startBtn').style.display = 'inline-block';
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('retroSnakeBest', highScore);
+                document.getElementById('highScore').textContent = highScore;
+            }
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('gameOverOverlay').classList.add('show');
+        }
+
+        function changeDirection(x, y) {
+            if (direction.x === -x && direction.y === -y) return;
+            if (nextDirection.x !== x || nextDirection.y !== y) sfx.turn();
+            nextDirection = {x, y};
+        }
+
+        document.addEventListener('keydown', e => {
+            const k = e.key.toLowerCase();
+            if (['arrowup','arrowdown','arrowleft','arrowright',' '].includes(e.key.toLowerCase()) || ['w','a','s','d'].includes(k)) e.preventDefault();
+            if (k==='arrowup'||k==='w') changeDirection(0,-1);
+            if (k==='arrowdown'||k==='s') changeDirection(0,1);
+            if (k==='arrowleft'||k==='a') changeDirection(-1,0);
+            if (k==='arrowright'||k==='d') changeDirection(1,0);
+            if (e.key===' ') pauseGame();
+        });
+
+        initGame();
+        drawGame();
+    </script>
+</body>
+</html>

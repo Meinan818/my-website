@@ -1,0 +1,25 @@
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 编辑器
+.vscode/
+.idea/
+
+# 自检 / 备份（不属于源码）
+_shots/
+_backup/
+
+# 依赖与构建（本项目为纯静态，预留）
+node_modules/
+dist/
+
+# 密钥与环境变量（切勿提交）
+.env
+.env.*
+*.pem
+*.key
+
+# 日志
+*.log
+npm-debug.log*

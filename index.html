@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>快乐大野鸡 - 神的作品集</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💻</text></svg>">
+    <link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=ZCOOL+KuaiLe&family=ZCOOL+XiaoWei&family=Long+Cang&display=swap">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background-color: #f8f9fc;
+            color: #333;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* 浮动装饰元素 */
+        .floating-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 12px;
+            opacity: 0.2;
+        }
+
+        .shape-1 {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            top: 10%;
+            left: 5%;
+            animation: float1 8s ease-in-out infinite;
+        }
+
+        .shape-2 {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+            top: 60%;
+            right: 8%;
+            animation: float2 10s ease-in-out infinite;
+        }
+
+        .shape-3 {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #6c5ce7, #74b9ff);
+            bottom: 20%;
+            left: 15%;
+            animation: float3 7s ease-in-out infinite;
+        }
+
+        .shape-4 {
+            width: 180px;
+            height: 180px;
+            border: 2px dashed #6c5ce7;
+            top: 30%;
+            right: 15%;
+            animation: float1 9s ease-in-out infinite reverse;
+        }
+
+        .shape-5 {
+            width: 120px;
+            height: 120px;
+            border: 2px dashed #a29bfe;
+            bottom: 10%;
+            right: 25%;
+            animation: float2 11s ease-in-out infinite reverse;
+        }
+
+        @keyframes float1 {
+            0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+            50% { transform: translateY(-40px) rotate(8deg) scale(1.05); }
+        }
+
+        @keyframes float2 {
+            0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+            50% { transform: translateY(30px) rotate(-8deg) scale(1.08); }
+        }
+
+        @keyframes float3 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, -25px) scale(1.15); }
+        }
+
+        /* 导航栏 */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            box-shadow: 0 2px 20px rgba(108, 92, 231, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #6c5ce7;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .nav-links {
+            display: none;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #555;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: #6c5ce7;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #6c5ce7;
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: #f0edff;
+            border: none;
+            color: #6c5ce7;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-btn:active {
+            background: #6c5ce7;
+            color: white;
+        }
+
+        /* 主要内容 */
+        main {
+            position: relative;
+            z-index: 1;
+        }
+
+        .section {
+            padding: 100px 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Hero 区域 */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding-top: 80px;
+        }
+
+        .hero-card {
+            background: white;
+            padding: 4rem 3rem;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(108, 92, 231, 0.15);
+            max-width: 600px;
+            width: 100%;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-avatar {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            border-radius: 50%;
+            margin: 0 auto 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            box-shadow: 0 10px 30px rgba(108, 92, 231, 0.3);
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .hero .subtitle {
+            font-family: 'Long Cang', 'ZCOOL XiaoWei', 'Kaiti SC', 'STKaiti', '楷体', cursive;
+            font-size: 1.05rem;
+            color: #b6aee6;
+            margin-bottom: 1.5rem;
+            font-weight: 400;
+            letter-spacing: 3px;
+        }
+
+        .hero p {
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 1.05rem;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.8rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6c5ce7, #7c6cf0);
+            color: white;
+            box-shadow: 0 5px 20px rgba(108, 92, 231, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #6c5ce7;
+            border: 2px solid #6c5ce7;
+        }
+
+        .btn-outline:hover {
+            background: #6c5ce7;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* 区块标题 */
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title h2 {
+            font-size: 2.2rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .section-title .divider {
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, #6c5ce7, #a29bfe);
+            border-radius: 2px;
+            margin: 0 auto;
+        }
+
+        .section-title p {
+            color: #888;
+            margin-top: 1rem;
+        }
+
+        /* 关于我 */
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .about-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(108, 92, 231, 0.1);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .about-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 50px rgba(108, 92, 231, 0.2);
+        }
+
+        .about-card h3 {
+            color: #6c5ce7;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .about-card p {
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .info-list {
+            list-style: none;
+        }
+
+        .info-list li {
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+
+        .info-list .label {
+            color: #888;
+        }
+
+        .info-list .value {
+            color: #333;
+            font-weight: 500;
+        }
+
+        /* 技能 */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .skill-category {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 5px 20px rgba(108, 92, 231, 0.08);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .skill-category:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(108, 92, 231, 0.2);
+        }
+
+        .skill-category h4 {
+            color: #6c5ce7;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .skill-tag {
+            padding: 6px 14px;
+            background: linear-gradient(135deg, #f0edff, #e8e4ff);
+            color: #6c5ce7;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* 项目卡片 */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .project-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(108, 92, 231, 0.1);
+            transition: all 0.4s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 50px rgba(108, 92, 231, 0.2);
+        }
+
+        .project-image {
+            height: 180px;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+        }
+
+        .project-body {
+            padding: 1.8rem;
+        }
+
+        .project-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #f0edff;
+            color: #6c5ce7;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+        }
+
+        .project-card h3 {
+            color: #333;
+            margin-bottom: 0.8rem;
+            font-size: 1.25rem;
+        }
+
+        .project-card p {
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+
+        .project-tech {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 1.2rem;
+        }
+
+        .tech-tag {
+            padding: 4px 10px;
+            background: #f8f7ff;
+            color: #888;
+            border-radius: 8px;
+            font-size: 0.75rem;
+        }
+
+        .project-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .project-links a {
+            text-decoration: none;
+            color: #6c5ce7;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .project-links a:hover {
+            color: #4a3fbf;
+        }
+
+        /* 课程设计 */
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .course-card {
+            background: white;
+            padding: 1.8rem;
+            border-radius: 16px;
+            box-shadow: 0 5px 20px rgba(108, 92, 231, 0.08);
+            border-left: 4px solid #6c5ce7;
+            transition: all 0.3s ease;
+        }
+
+        .course-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 10px 30px rgba(108, 92, 231, 0.15);
+        }
+
+        .course-card h4 {
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .course-card .course-name {
+            color: #6c5ce7;
+            font-size: 0.85rem;
+            margin-bottom: 0.8rem;
+            font-weight: 500;
+        }
+
+        .course-card p {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* 联系 */
+        .contact-card {
+            background: white;
+            padding: 3rem;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(108, 92, 231, 0.15);
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .contact-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .contact-item {
+            padding: 1.5rem;
+            background: #f8f7ff;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .contact-item:hover {
+            background: #f0edff;
+            transform: translateY(-3px);
+        }
+
+        .contact-item .icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .contact-item .label {
+            color: #888;
+            font-size: 0.85rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .contact-item .value {
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        /* 页脚 */
+        footer {
+            background: white;
+            text-align: center;
+            padding: 2rem;
+            color: #888;
+            margin-top: 3rem;
+            box-shadow: 0 -5px 20px rgba(108, 92, 231, 0.05);
+        }
+
+        /* 滚动动画 */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: flex !important;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 280px;
+                max-width: 80vw;
+                height: 100vh;
+                background: white;
+                flex-direction: column;
+                padding: 0;
+                gap: 0;
+                box-shadow: 2px 0 30px rgba(108, 92, 231, 0.15);
+                transform: translateX(-100%);
+                transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                z-index: 1002;
+                overflow-y: auto;
+            }
+
+            .nav-links.active {
+                transform: translateX(0);
+            }
+
+            .nav-links li {
+                border-bottom: none;
+            }
+
+            /* 顶部header */
+            .menu-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1.2rem 1.5rem;
+                border-bottom: 1px solid #f5f5f5;
+                margin-bottom: 0.5rem;
+            }
+
+            .menu-logo {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .menu-logo .logo-icon {
+                width: 32px;
+                height: 32px;
+                background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: bold;
+                font-size: 0.9rem;
+            }
+
+            .menu-logo span {
+                color: #6c5ce7;
+                font-weight: 700;
+                font-size: 1.1rem;
+            }
+
+            .menu-close {
+                background: none;
+                border: none;
+                font-size: 1.3rem;
+                color: #888;
+                cursor: pointer;
+                padding: 5px;
+                line-height: 1;
+            }
+
+            /* 菜单项 */
+            .nav-links li a {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                padding: 0.9rem 1.5rem;
+                transition: all 0.25s ease;
+                color: #555;
+                font-size: 0.95rem;
+            }
+
+            .nav-links li a:hover {
+                background: #f8f7ff;
+                color: #6c5ce7;
+            }
+
+            .nav-links li a:active {
+                background: linear-gradient(135deg, #6c5ce7, #7c6cf0);
+                color: white;
+                margin: 0 0.8rem;
+                border-radius: 10px;
+            }
+
+            .menu-icon {
+                width: 22px;
+                height: 22px;
+                flex-shrink: 0;
+            }
+
+            /* 分组标题 */
+            .menu-divider {
+                padding: 0.8rem 1.5rem 0.4rem;
+                color: #aaa;
+                font-size: 0.8rem;
+                font-weight: 500;
+            }
+
+            .menu-divider span {
+                color: #aaa;
+            }
+
+            /* 遮罩层（透明，只用来点击关闭） */
+            .menu-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100vh;
+                background: transparent;
+                z-index: 1001;
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+            }
+
+            .menu-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .mobile-menu-btn {
+                display: flex;
+            }
+
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .hero-card {
+                padding: 2.5rem 1.5rem;
+            }
+
+            .about-content {
+                grid-template-columns: 1fr;
+            }
+
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section {
+                padding: 60px 1.5rem;
+            }
+
+            .section-title h2 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+    <style>[data-custom-element*="watermark"]{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}</style>
+</head>
+<body>
+    <!-- 浮动装饰背景 -->
+    <div class="floating-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+        <div class="shape shape-5"></div>
+    </div>
+
+    <!-- 菜单遮罩层 -->
+    <div class="menu-overlay" id="menu-overlay"></div>
+
+    <!-- 导航栏 -->
+    <nav id="main-nav">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">P</div>
+                <span>我的项目集</span>
+            </div>
+            <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="菜单">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 菜单遮罩层 -->
+    <div class="menu-overlay" id="menu-overlay"></div>
+
+    <!-- 侧边菜单（独立于nav，确保层级正确） -->
+    <ul class="nav-links" id="nav-links">
+        <li class="menu-header">
+            <div class="menu-logo">
+                <div class="logo-icon">P</div>
+                <span>我的项目集</span>
+            </div>
+            <button class="menu-close" onclick="closeMenu()">✕</button>
+        </li>
+        <li><a href="#home">
+            <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            首页
+        </a></li>
+        <li><a href="#about">
+            <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            关于神
+        </a></li>
+        <li class="menu-divider"><span>学习</span></li>
+        <li><a href="#skills">
+            <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+            技能栈
+        </a></li>
+        <li><a href="#projects">
+            <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+            项目
+        </a></li>
+        <li><a href="#courses">
+            <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            课程设计
+        </a></li>
+        <li class="menu-divider"><span>联系</span></li>
+        <li><a href="#contact">
+            <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            联系我
+        </a></li>
+    </ul>
+
+    <main id="main-content">
+        <!-- Hero 区域 -->
+        <section class="hero section" id="home">
+            <div class="hero-card">
+                <div class="hero-avatar">👨‍💻</div>
+                <h1>欢迎来到快乐大野鸡的项目集</h1>
+                <p class="subtitle">或许是不知梦的缘故，流离之人追逐幻影</p>
+                <p>这里是曾经那位快乐大野鸡留下的神迹，里面有编程项目，课程设计和技术探索。ok废话不多说让我们进入神迹</p>
+                <div class="hero-buttons">
+                    <a href="#projects" class="btn btn-primary">查看项目</a>
+                    <a href="#contact" class="btn btn-outline">联系我</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 关于我 -->
+        <section class="section" id="about">
+            <div class="section-title fade-in">
+                <h2>关于神</h2>
+                <div class="divider"></div>
+                <p>一键了解神的来时路</p>
+            </div>
+            <div class="about-content">
+                <div class="about-card fade-in">
+                    <h3>👋 个人简介</h3>
+                    <p>二十二岁，计算机专业在读，人生熟练度大概百分之十二。</p>
+                    <p style="margin-top: 1rem;">没什么拿得出手的技能，唯一满级的是“在尴尬场合保持微笑”，被动技能是“越努力越倒霉”，大招是“深夜emo但白天照常上课”。</p>
+                    <p style="margin-top: 1rem;">白天写代码，晚上写bug，偶尔抬头看看天，觉得自己大概是这个世界的NPC——没有剧情线，没有好感度选项，路过的主角跟我对完话就走了，连个支线任务都不给我。</p>
+                    <p style="margin-top: 1rem;">但我还是每天准时上线，毕竟NPC也得有NPC的职业素养。</p>
+                    <p style="margin-top: 1rem;">最大的梦想是不劳而获，目前进度：零。</p>
+                    <p style="margin-top: 1rem;">反正又不会死，对吧。</p>
+                </div>
+                <div class="about-card fade-in">
+                    <h3>📋 基本信息</h3>
+                    <ul class="info-list">
+                        <li>
+                            <span class="label">专业</span>
+                            <span class="value">计算机科学与技术</span>
+                        </li>
+                        <li>
+                            <span class="label">方向</span>
+                            <span class="value">软件开发 / 全栈</span>
+                        </li>
+                        <li>
+                            <span class="label">学历</span>
+                            <span class="value">本科在读</span>
+                        </li>
+                        <li>
+                            <span class="label">兴趣</span>
+                            <span class="value">编程、开源、技术分享</span>
+                        </li>
+                        <li>
+                            <span class="label">状态</span>
+                            <span class="value" style="color: #f1c40f; font-weight: 700;">牛马态</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 技能 -->
+        <section class="section" id="skills">
+            <div class="section-title fade-in">
+                <h2>技能栈</h2>
+                <div class="divider"></div>
+                <p>掌握的编程语言和技术工具</p>
+            </div>
+            <div class="skills-grid">
+                <div class="skill-category fade-in">
+                    <h4>🖥️ 编程语言</h4>
+                    <div class="skill-tags">
+                        <span class="skill-tag">C/C++</span>
+                        <span class="skill-tag">Java</span>
+                        <span class="skill-tag">Python</span>
+                        <span class="skill-tag">JavaScript</span>
+                        <span class="skill-tag">SQL</span>
+                    </div>
+                </div>
+                <div class="skill-category fade-in">
+                    <h4>🌐 前端开发</h4>
+                    <div class="skill-tags">
+                        <span class="skill-tag">HTML/CSS</span>
+                        <span class="skill-tag">Vue.js</span>
+                        <span class="skill-tag">React</span>
+                        <span class="skill-tag">Tailwind</span>
+                    </div>
+                </div>
+                <div class="skill-category fade-in">
+                    <h4>⚙️ 后端开发</h4>
+                    <div class="skill-tags">
+                        <span class="skill-tag">Node.js</span>
+                        <span class="skill-tag">Spring Boot</span>
+                        <span class="skill-tag">Flask</span>
+                        <span class="skill-tag">MySQL</span>
+                    </div>
+                </div>
+                <div class="skill-category fade-in">
+                    <h4>🧭 产品能力</h4>
+                    <div class="skill-tags">
+                        <span class="skill-tag">PRD 需求文档</span>
+                        <span class="skill-tag">需求分析 / 需求池</span>
+                        <span class="skill-tag">原型 Figma / Axure / 墨刀</span>
+                        <span class="skill-tag">流程图 ProcessOn</span>
+                        <span class="skill-tag">用户调研 / 用户画像</span>
+                        <span class="skill-tag">竞品分析</span>
+                        <span class="skill-tag">数据指标 / A/B 测试</span>
+                        <span class="skill-tag">产品路线图规划</span>
+                        <span class="skill-tag">项目管理 Jira / 禅道</span>
+                    </div>
+                </div>
+                <div class="skill-category fade-in">
+                    <h4>🛠️ 工具与其他</h4>
+                    <div class="skill-tags">
+                        <span class="skill-tag">Git</span>
+                        <span class="skill-tag">Linux</span>
+                        <span class="skill-tag">Docker</span>
+                        <span class="skill-tag">VS Code</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 项目展示 -->
+        <section class="section" id="projects">
+            <div class="section-title fade-in">
+                <h2>个人项目</h2>
+                <div class="divider"></div>
+                <p>我独立完成的编程项目</p>
+            </div>
+            <div class="projects-grid">
+                <div class="project-card fade-in">
+                    <div class="project-image">📝</div>
+                    <div class="project-body">
+                        <span class="project-tag">Web 应用</span>
+                        <h3>在线笔记应用</h3>
+                        <p>一个支持 Markdown 编辑的在线笔记工具，支持分类管理、标签系统和云端同步，界面简洁美观。</p>
+                        <div class="project-tech">
+                            <span class="tech-tag">Vue.js</span>
+                            <span class="tech-tag">Node.js</span>
+                            <span class="tech-tag">MongoDB</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="https://jjbj.pages.dev/" target="_blank">查看详情 →</a>
+                            <a href="#" onclick="showToast('GitHub仓库待更新')">GitHub →</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="project-card fade-in">
+                    <div class="project-image">🤖</div>
+                    <div class="project-body">
+                        <span class="project-tag">AI 项目</span>
+                        <h3>智能聊天机器人</h3>
+                        <p>基于 Python 和大语言模型 API 开发的智能对话机器人，支持多轮对话和上下文理解。</p>
+                        <div class="project-tech">
+                            <span class="tech-tag">Python</span>
+                            <span class="tech-tag">Flask</span>
+                            <span class="tech-tag">AI API</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="https://ai-cdr.pages.dev/" target="_blank">查看详情 →</a>
+                            <a href="#" onclick="showToast('GitHub仓库待更新')">GitHub →</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="project-card fade-in">
+                    <div class="project-image">🛒</div>
+                    <div class="project-body">
+                        <span class="project-tag">电商系统</span>
+                        <h3>简易电商平台</h3>
+                        <p>完整的前后端分离电商系统，包含商品展示、购物车、订单管理和用户登录功能。</p>
+                        <div class="project-tech">
+                            <span class="tech-tag">React</span>
+                            <span class="tech-tag">Spring Boot</span>
+                            <span class="tech-tag">MySQL</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="https://dianshang-1uv.pages.dev/" target="_blank">查看详情 →</a>
+                            <a href="#" onclick="showToast('演示项目，暂无GitHub地址')">GitHub →</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="project-card fade-in">
+                    <div class="project-image">📊</div>
+                    <div class="project-body">
+                        <span class="project-tag">数据分析</span>
+                        <h3>数据可视化看板</h3>
+                        <p>基于 ECharts 的数据可视化大屏，支持实时数据更新和多种图表类型展示。</p>
+                        <div class="project-tech">
+                            <span class="tech-tag">Python</span>
+                            <span class="tech-tag">ECharts</span>
+                            <span class="tech-tag">FastAPI</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="https://sjkb.pages.dev/" target="_blank">查看详情 →</a>
+                            <a href="#" onclick="showToast('GitHub仓库待更新')">GitHub →</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="project-card fade-in">
+                    <div class="project-image">🎮</div>
+                    <div class="project-body">
+                        <span class="project-tag">小游戏</span>
+                        <h3>贪吃蛇游戏</h3>
+                        <p>经典贪吃蛇游戏的网页版实现，支持键盘操作、计分系统和难度选择。</p>
+                        <div class="project-tech">
+                            <span class="tech-tag">JavaScript</span>
+                            <span class="tech-tag">Canvas</span>
+                            <span class="tech-tag">CSS3</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="https://lqx666.pages.dev/" target="_blank">查看详情 →</a>
+                            <a href="#" onclick="showToast('GitHub仓库待更新')">GitHub →</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="project-card fade-in">
+                    <div class="project-image">📱</div>
+                    <div class="project-body">
+                        <span class="project-tag">工具应用</span>
+                        <h3>待办事项清单</h3>
+                        <p>简洁高效的待办事项管理工具，支持任务分类、优先级标记和本地存储。</p>
+                        <div class="project-tech">
+                            <span class="tech-tag">HTML/CSS</span>
+                            <span class="tech-tag">JavaScript</span>
+                            <span class="tech-tag">LocalStorage</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="https://dbqd.pages.dev/" target="_blank">查看详情 →</a>
+                            <a href="#" onclick="showToast('GitHub仓库待更新')">GitHub →</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="project-card fade-in">
+                    <div class="project-image">🌰</div>
+                    <div class="project-body">
+                        <span class="project-tag">小游戏</span>
+                        <h3>栗子救援队</h3>
+                        <p>Canvas 平台跳跃闯关游戏，操控松鼠收集栗子、搬箱解谜，旗帜可保存重生点，含多关卡与 BOSS 战，支持键盘/触屏操作和本地双人，进度自动保存。</p>
+                        <div class="project-tech">
+                            <span class="tech-tag">HTML5 Canvas</span>
+                            <span class="tech-tag">JavaScript</span>
+                            <span class="tech-tag">LocalStorage</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="https://lizi-eg0.pages.dev/" target="_blank">查看详情 →</a>
+                            <a href="#" onclick="showToast('演示项目，暂无GitHub地址')">GitHub →</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 课程设计 -->
+        <section class="section" id="courses">
+            <div class="section-title fade-in">
+                <h2>课程设计</h2>
+                <div class="divider"></div>
+                <p>在校期间完成的课程设计作业</p>
+            </div>
+            <div class="courses-grid">
+                <div class="course-card fade-in">
+                    <h4>操作系统课程设计</h4>
+                    <div class="course-name">OS Course Design</div>
+                    <p>模拟进程调度算法，实现先来先服务、短作业优先、时间片轮转等多种调度算法的可视化演示。</p>
+                </div>
+                <div class="course-card fade-in">
+                    <h4>数据库课程设计</h4>
+                    <div class="course-name">Database Course Design</div>
+                    <p>图书馆管理系统，包含图书借阅、读者管理、库存查询等模块，使用 MySQL 数据库存储数据。</p>
+                </div>
+                <div class="course-card fade-in">
+                    <h4>数据结构课程设计</h4>
+                    <div class="course-name">Data Structures</div>
+                    <p>校园导航系统，使用图论算法实现最短路径规划，支持多个校区间的路线查询。</p>
+                </div>
+                <div class="course-card fade-in">
+                    <h4>计算机网络课程设计</h4>
+                    <div class="course-name">Computer Networks</div>
+                    <p>简易聊天室程序，基于 TCP/IP 协议实现多人在线聊天，支持私聊和群聊功能。</p>
+                </div>
+                <div class="course-card fade-in">
+                    <h4>软件工程课程设计</h4>
+                    <div class="course-name">Software Engineering</div>
+                    <p>学生信息管理系统，按照软件工程规范完成需求分析、设计、编码和测试全流程。</p>
+                </div>
+                <div class="course-card fade-in">
+                    <h4>编译原理课程设计</h4>
+                    <div class="course-name">Compiler Principles</div>
+                    <p>简单语法分析器，实现词法分析和语法分析功能，能够解析简单的编程语言代码。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 联系我 -->
+        <section class="section" id="contact">
+            <div class="section-title fade-in">
+                <h2>联系我</h2>
+                <div class="divider"></div>
+                <p>欢迎交流与合作</p>
+            </div>
+            <div class="contact-card fade-in">
+                <h3 style="color: #333; margin-bottom: 1rem;">被我的帅气迷晕了吧。</h3>
+                <p style="color: #666;">如果被我迷晕了，以下是给我递情书的途径</p>
+                <div class="contact-methods">
+                    <div class="contact-item" onclick="copyText('13643270611@163.com','邮箱')">
+                        <div class="icon">📧</div>
+                        <div class="label">邮箱（点击复制）</div>
+                        <div class="value">13643270611@163.com</div>
+                    </div>
+                    <div class="contact-item" onclick="showToast('GitHub 主页')">
+                        <div class="icon">🐱</div>
+                        <div class="label">GitHub</div>
+                        <div class="value">@美男</div>
+                    </div>
+                    <div class="contact-item" onclick="copyText('lllqx0611','微信号')">
+                        <div class="icon">💬</div>
+                        <div class="label">微信（点击复制）</div>
+                        <div class="value">lllqx0611</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer>
+        <p>我超威写的我好累啊</p>
+    </footer>
+
+    <!-- Toast 提示 -->
+    <div id="toast" style="
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%) translateY(100px);
+        background: #6c5ce7;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(108, 92, 231, 0.3);
+        transition: transform 0.3s ease;
+        z-index: 1000;
+        opacity: 0;
+    "></div>
+
+    <script>
+        // 移动端汉堡菜单（左侧滑出）
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const navLinks = document.getElementById('nav-links');
+        const menuOverlay = document.getElementById('menu-overlay');
+
+        const hamburgerIcon = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>';
+        const closeIcon = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>';
+
+        function openMenu() {
+            navLinks.classList.add('active');
+            menuOverlay.classList.add('active');
+            mobileMenuBtn.innerHTML = closeIcon;
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMenu() {
+            navLinks.classList.remove('active');
+            menuOverlay.classList.remove('active');
+            mobileMenuBtn.innerHTML = hamburgerIcon;
+            document.body.style.overflow = '';
+        }
+
+        mobileMenuBtn.addEventListener('click', function() {
+            if (navLinks.classList.contains('active')) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
+        });
+
+        // 点击遮罩层关闭菜单
+        menuOverlay.addEventListener('click', closeMenu);
+
+        // 点击导航链接后关闭菜单并滚动
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                closeMenu();
+                setTimeout(() => {
+                    const target = document.querySelector(targetId);
+                    if (target) {
+                        const top = target.getBoundingClientRect().top + window.pageYOffset - 60;
+                        window.scrollTo({ top: top, behavior: 'smooth' });
+                    }
+                }, 300);
+            });
+        });
+
+        // Toast 提示函数
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateX(-50%) translateY(0)';
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(-50%) translateY(100px)';
+            }, 2000);
+        }
+
+        // 点击复制（优先剪贴板 API，失败时用兜底方案）
+        function copyText(text, label) {
+            function done() { showToast((label || '内容') + '已复制：' + text); }
+            function fail() { showToast('复制失败，请手动长按选择：' + text); }
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy());
+            } else {
+                fallbackCopy();
+            }
+            function fallbackCopy() {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+                try { document.execCommand('copy') ? done() : fail(); }
+                catch (e) { fail(); }
+                document.body.removeChild(ta);
+            }
+        }
+
+        // 滚动动画
+        const observerOptions = {
+            threshold: 0.05,
+            rootMargin: '0px 0px 0px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // 导航栏滚动效果
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 50) {
+                nav.style.boxShadow = '0 5px 30px rgba(108, 92, 231, 0.15)';
+            } else {
+                nav.style.boxShadow = '0 2px 20px rgba(108, 92, 231, 0.08)';
+            }
+        });
+    </script>
+
+    <!-- 独立兜底：无论上方脚本是否异常，保证所有 fade-in 最终显现、可点击 -->
+    <script>
+    (function () {
+        function revealAll() {
+            try {
+                document.querySelectorAll('.fade-in:not(.visible)').forEach(function (el) {
+                    el.classList.add('visible');
+                });
+            } catch (e) {}
+        }
+        if (!('IntersectionObserver' in window)) revealAll();
+        window.addEventListener('load', function () { setTimeout(revealAll, 1200); });
+        setTimeout(revealAll, 2500); // 最终保险，2.5s 后一定全部显示
+    })();
+    </script>
+</body>
+</html>

@@ -408,6 +408,32 @@
             document.getElementById('chatScroll').scrollTop = document.getElementById('chatScroll').scrollHeight;
         }
 
+        // 打字机队列：网络到达的文本先入队，再按固定节奏逐字渲染，避免一大片蹦出
+        function makeTyper(render) {
+            let queue = '';
+            let timer = null;
+            const tick = () => {
+                if (queue.length) {
+                    render(queue[0]);
+                    queue = queue.slice(1);
+                } else {
+                    clearInterval(timer);
+                    timer = null;
+                }
+            };
+            return {
+                feed(text) {
+                    queue += text;
+                    if (!timer) timer = setInterval(tick, 18);
+                },
+                flush() {
+                    if (queue.length) { render(queue); queue = ''; }
+                    if (timer) { clearInterval(timer); timer = null; }
+                },
+                get isBusy() { return !!timer || queue.length > 0; }
+            };
+        }
+
         // 创建带“思考过程”区块的机器人气泡（DeepSeek 风格：上方可折叠思考，下方正式回复）
         function createBotMessage() {
             if (welcome) welcome.style.display = 'none';
@@ -447,7 +473,12 @@
 
             let hasReason = false;
             let collapsed = false;
+            let textStarted = false;
             const scrollBox = document.getElementById('chatScroll');
+
+            // 思考、正文各用一个打字机，匀速逐字显示
+            const reasonTyper = makeTyper(ch => { thinkBody.textContent += ch; });
+            const textTyper = makeTyper(ch => { textEl.textContent += ch; });
 
             thinkHead.addEventListener('click', () => {
                 collapsed = !collapsed;
@@ -458,10 +489,11 @@
             return {
                 appendReason(piece) {
                     if (!hasReason) { hasReason = true; think.style.display = 'block'; }
-                    thinkBody.textContent += piece;
+                    reasonTyper.feed(piece);
                     scrollBox.scrollTop = scrollBox.scrollHeight;
                 },
                 finishThink(sec) {
+                    reasonTyper.flush(); // 剩余思考立即补全再折叠，不丢内容
                     if (!hasReason) { think.remove(); return; }
                     thinkHead.querySelector('.think-title').textContent = '已深度思考（用时 ' + sec.toFixed(1) + ' 秒）';
                     thinkBody.style.display = 'none';
@@ -469,8 +501,18 @@
                     collapsed = true;
                 },
                 appendText(piece) {
-                    textEl.textContent += piece;
+                    if (!textStarted) { textStarted = true; textEl.classList.add('streaming'); }
+                    textTyper.feed(piece);
                     scrollBox.scrollTop = scrollBox.scrollHeight;
+                },
+                finalize() {
+                    return new Promise(res => {
+                        const check = () => {
+                            if (!textTyper.isBusy) { textEl.classList.remove('streaming'); res(); }
+                            else setTimeout(check, 30);
+                        };
+                        check();
+                    });
                 }
             };
         }
@@ -523,8 +565,9 @@
                     if (!bot) {
                         hideTyping();
                         addMessage(full || '（我张了张嘴，却没说出话来……）', false);
-                    } else if (!thinkDone) {
-                        bot.finishThink((Date.now() - t0) / 1000);
+                    } else {
+                        if (!thinkDone) bot.finishThink((Date.now() - t0) / 1000);
+                        await bot.finalize(); // 等正文逐字吐完，再移除末尾光标
                     }
                 } catch (err) {
                     hideTyping();

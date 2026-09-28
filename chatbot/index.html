@@ -353,6 +353,20 @@
         const messageInput = document.getElementById('messageInput');
         const sendBtn = document.getElementById('sendBtn');
 
+        // 全局滚动跟随（只注册一次）：用户上滑查看历史即停止跟随，自己回到底部才恢复
+        const scrollBox = document.getElementById('chatScroll');
+        let pinned = true;
+        const nearBottom = () => scrollBox.scrollHeight - scrollBox.scrollTop - scrollBox.clientHeight < 40;
+        let touchStartY = null;
+        scrollBox.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
+        scrollBox.addEventListener('touchmove', e => {
+            if (touchStartY != null && e.touches[0].clientY - touchStartY > 8) pinned = false; // 手指下滑=查看历史
+        }, { passive: true });
+        scrollBox.addEventListener('wheel', e => { if (e.deltaY < 0) pinned = false; }, { passive: true });
+        scrollBox.addEventListener('keydown', () => { pinned = false; });
+        scrollBox.addEventListener('scroll', () => { if (nearBottom()) pinned = true; });
+        const follow = () => { if (pinned) scrollBox.scrollTop = scrollBox.scrollHeight; };
+
         // 发给真实大模型的对话记录（role / content）
         const chatMessages = [];
 
@@ -390,7 +404,7 @@
                     if (payload === '[DONE]') continue;
                     try {
                         const delta = JSON.parse(payload).choices[0].delta;
-                        const rs = delta.reasoning_content;
+                        const rs = delta.reasoning_content || delta.reasoning;
                         if (rs) handlers.reason(rs);
                         const ct = delta.content;
                         if (ct) { full += ct; handlers.token(ct); }
@@ -535,15 +549,8 @@
             let hasReason = false;
             let collapsed = false;
             let textStarted = false;
-            const scrollBox = document.getElementById('chatScroll');
 
-            // 智能跟随滚动：仅当用户停在底部附近才自动滚，上滑查看历史时不强行拉回
-            let pinned = true;
-            const isPinned = () => scrollBox.scrollHeight - scrollBox.scrollTop - scrollBox.clientHeight < 80;
-            scrollBox.addEventListener('scroll', () => { pinned = isPinned(); });
-            const follow = () => { if (pinned) scrollBox.scrollTop = scrollBox.scrollHeight; };
-
-            // 思考、正文各用一个打字机；正文节奏放慢一点
+            // 思考、正文各用一个打字机；正文节奏放慢一点（滚动跟随用全局 follow）
             const reasonTyper = makeTyper(ch => { thinkBody.textContent += ch; follow(); }, 18);
             const textTyper = makeTyper(ch => { textEl.textContent += ch; follow(); }, 34);
 
@@ -564,7 +571,7 @@
                     reasonTyper.flush(); // 剩余思考立即补全
                     if (!hasReason) { think.remove(); return; }
                     thinkBody.classList.add('md');
-                    thinkBody.innerHTML = renderMarkdown(thinkBody.textContent);
+                    thinkBody.innerHTML = renderMarkdown(thinkBody.textContent.trim());
                     thinkHead.querySelector('.think-title').textContent = '已深度思考（用时 ' + sec.toFixed(1) + ' 秒）';
                     thinkBody.style.display = 'none';
                     think.classList.add('collapsed');
@@ -579,7 +586,7 @@
                         const check = () => {
                             if (!textTyper.isBusy) {
                                 textEl.classList.add('md');
-                                textEl.innerHTML = renderMarkdown(textEl.textContent);
+                                textEl.innerHTML = renderMarkdown(textEl.textContent.trim());
                                 textEl.classList.remove('streaming');
                                 res();
                             } else {

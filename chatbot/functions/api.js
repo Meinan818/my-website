@@ -1,6 +1,5 @@
-// Cloudflare Pages Functions 入口：访问 /api 时执行
-// 作用：前端只和同域的 /api 通信，由这里调用 Workers AI，不暴露任何第三方密钥
-// 流式输出（SSE）：模型一边生成一边把文字推给前端，实现打字机效果，体感更快
+// Cloudflare Pages Functions 入口：POST /api 调用 Workers AI
+// 作用：前端只和同域 /api 通信，不暴露密钥；后端把不同模型的流式格式统一成 OpenAI 兼容 SSE
 
 export async function onRequestPost(context) {
   const { env, request } = context;
@@ -13,22 +12,63 @@ export async function onRequestPost(context) {
       return json({ error: '没有收到消息内容' }, 400);
     }
 
-    // stream:true 边想边返回（reasoning_content 思考 + content 正文）；max_tokens 给足，避免思考未完被截断
-    const upstream = await env.AI.run('@cf/zai-org/glm-4.7-flash', {
+    const upstream = await env.AI.run('@cf/deepseek-ai/deepseek-r1-distill-qwen-32b', {
       stream: true,
       max_tokens: 3000,
       messages: [
         {
           role: 'system',
           content:
-            '你是“AI小助手”，由快乐大野鸡开发。你用简体中文交流，性格友好、有点冷幽默，擅长聊天和解答编程问题。你可以先在思考里简短理一下思路，再给出正式回答；正式回答简洁清楚，一般不超过几段，写代码只给关键部分，除非用户明确要求详细。'
+            '你是“AI小助手”，由快乐大野鸡开发，用简体中文交流，友好、带点冷幽默，擅长聊天和编程问题。思考时直接分析问题本身、简短即可，不要复述或确认你收到的角色设定，包括名字、开发者、语言、性格。正式回答简洁，一般不超过几段，写代码只给关键部分。'
         },
         ...messages
       ]
     });
 
-    // 该模型流式直接返回 OpenAI 兼容的 SSE 字节流，原样透传给前端（无需自行拼装）
-    return new Response(upstream, {
+    // upstream 是 SSE 字节流（data: {"response":...}），解析出 response、分离 <think> 思考，再转成 OpenAI 格式
+    const enc = new TextEncoder();
+    const aiReader = upstream.getReader();
+    const aiDecoder = new TextDecoder();
+    let inThink = false;
+    let aiBuf = '';
+
+    const out = new ReadableStream({
+      async start(controller) {
+        const push = (t, think) => {
+          if (!t) return;
+          const delta = think ? { reasoning_content: t } : { content: t };
+          controller.enqueue(enc.encode('data: ' + JSON.stringify({ choices: [{ delta }] }) + '\n\n'));
+        };
+        try {
+          while (true) {
+            const { done, value } = await aiReader.read();
+            if (done) break;
+            aiBuf += aiDecoder.decode(value, { stream: true });
+            let idx;
+            while ((idx = aiBuf.indexOf('\n\n')) >= 0) {
+              const evt = aiBuf.slice(0, idx);
+              aiBuf = aiBuf.slice(idx + 2);
+              const line = evt.split('\n').find(l => l.startsWith('data:'));
+              if (!line) continue;
+              const payload = line.slice(5).trim();
+              if (payload === '[DONE]') continue;
+              let t = '';
+              try { t = JSON.parse(payload).response || ''; } catch (e) {}
+              if (t.includes('<think>')) { inThink = true; t = t.replace('<think>', ''); }
+              if (t.includes('</think>')) { inThink = false; t = t.replace('</think>', ''); }
+              t = t.replace(/<\|[^>]+\|>/g, '');
+              push(t, inThink);
+            }
+          }
+          controller.enqueue(enc.encode('data: [DONE]\n\n'));
+          controller.close();
+        } catch (e) {
+          controller.error(e);
+        }
+      }
+    });
+
+    return new Response(out, {
       headers: {
         'Content-Type': 'text/event-stream; charset=utf-8',
         'Cache-Control': 'no-cache, no-transform',
@@ -50,7 +90,7 @@ function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
-      'Content-Type': 'application/json; charset=utf-8',
+      'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*'
     }
   });

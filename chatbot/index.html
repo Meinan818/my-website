@@ -285,111 +285,23 @@
         const messageInput = document.getElementById('messageInput');
         const sendBtn = document.getElementById('sendBtn');
 
-        let conversationHistory = [];
-        let userName = null;
-        let lastTopic = null;
+        // 发给真实大模型的对话记录（role / content）
+        const chatMessages = [];
 
-        const jokes = [
-            '程序员最讨厌康熙的哪个儿子？——胤禛（谐音：bug多）😂',
-            '为什么程序员总分不清万圣节和圣诞节？因为 Oct 31 == Dec 25！',
-            '一个SQL查询走进一家酒吧，看见两张表，他问："我能加入你们吗？"',
-            '程序员的老婆让他去超市买一斤包子，看到西瓜就买两个。他回来了，带了两个包子。',
-            '为什么Java程序员总是那么有钱？因为他们有Class！',
-            'HTML和HTML5有什么区别？多了一个5！',
-            '数据库里面最有钱的表是哪个？——薪资表！',
-            '你知道程序员最喜欢什么运动吗？——编程马拉松（Hackathon）！',
-            '为什么程序员喜欢黑暗模式？因为光会吸引bug！',
-            'JavaScript最浪漫的告白是什么？"我像var一样，永远为你改变！"'
-        ];
-
-        const rules = [
-            { patterns: ['你好', '您好', 'hi', 'hello', '嗨', '在吗', '在不在'],
-              replies: ['你好呀！很高兴和你聊天~ 今天过得怎么样？', 'Hi！你好呀~ 有什么我可以帮你的吗？', '哈喽！终于有人找我聊天了，快问我点问题吧！'] },
-            { patterns: ['你是谁', '介绍一下你自己', '你叫什么', '你的名字', '你叫啥'],
-              replies: ['我是AI小助手，快乐大野鸡开发的智能聊天机器人！会的东西可多了~', '我是你的AI助手，由快乐大野鸡亲手打造，陪你聊天解闷，帮你解决问题！'] },
-            { patterns: ['你会做什么', '你能做什么', '你的功能', '你能干什么', '你会啥'],
-              replies: ['我可以：\n• 陪你聊天解闷\n• 讲笑话逗你开心\n• 回答编程相关问题\n• 帮你查时间日期\n• 给你学习建议\n\n你想试试哪个？', '我会的可多了！聊天、讲笑话、回答问题、出主意... 你随便问！'] },
-            { patterns: ['讲个笑话', '说个笑话', '来个笑话', '搞笑', '逗我开心', '再来一个'],
-              replies: () => [jokes[Math.floor(Math.random() * jokes.length)]] },
-            { patterns: ['现在几点', '几点了', '什么时间', '现在时间', '几点钟'],
-              replies: () => {
-                  const now = new Date();
-                  return ['现在是 ' + now.getHours() + '点' + now.getMinutes() + '分' + now.getSeconds() + '秒，时间过得真快呀~'];
-              } },
-            { patterns: ['今天几号', '今天日期', '什么日子', '星期几', '今天星期'],
-              replies: () => {
-                  const now = new Date();
-                  const days = ['日','一','二','三','四','五','六'];
-                  return ['今天是 ' + now.getFullYear() + '年' + (now.getMonth()+1) + '月' + now.getDate() + '日，星期' + days[now.getDay()] + '~'];
-              } },
-            { patterns: ['天气', '下雨', '晴天', '温度', '冷不冷', '热不热'],
-              replies: ['今天天气不错哦！适合出去走走，或者写代码~ 出门记得看天气预报哦！', '天气我还真不太准，毕竟我是个AI😅 你自己看看窗外吧~'] },
-            { patterns: ['学编程', '编程入门', '怎么学编程', '编程怎么学', '新手学编程'],
-              replies: ['学编程最重要的三点：\n1. 多动手写代码，不要只看教程\n2. 从做小项目开始\n3. 遇到问题先自己查\n\n你想学什么语言？Python 还是前端？', '编程入门推荐从 Python 开始，语法简单容易上手。先学基础语法，再做几个小项目，慢慢就有感觉了！'] },
-            { patterns: ['python'],
-              replies: ['Python 是很好的入门语言！语法简洁，做AI、爬虫、Web、数据分析都可以，推荐《Python编程：从入门到实践》~', 'Python 超好用！你现在学到哪了？'] },
-            { patterns: ['javascript', 'js', '前端', 'html', 'css'],
-              replies: ['前端三件套：HTML是骨架，CSS是衣服，JavaScript是灵魂！学完可以做个个人网站试试~', 'JavaScript 现在前后端都能做（Node.js）。你正在用的这个聊天界面就是 JS 写的哦！'] },
-            { patterns: ['代码', '写代码', 'bug', '报错', 'error', '编程问题', '不会写'],
-              replies: ['遇到问题很正常！先读报错信息，90%的问题答案都在报错里。你可以把具体问题告诉我~', '有bug不要慌，这是程序员的日常！把报错发给我，我帮你分析~'] },
-            { patterns: ['项目', '你的项目', '你做了什么', '作品集'],
-              replies: ['我是快乐大野鸡的项目之一！他做了个人项目集、电商平台、贪吃蛇、在线笔记、数据看板、待办看板，还有我这个聊天机器人！'] },
-            { patterns: ['商城', '购物', '买东西', '潮物集市'],
-              replies: ['你可以去他的潮流选品店逛逛，从项目集点"查看详情"就能跳过去！'] },
-            { patterns: ['游戏', '贪吃蛇', '玩游戏', '小游戏'],
-              replies: ['他做了个贪吃蛇游戏，还有最高分记录呢，从项目集点进去就能玩~'] },
-            { patterns: ['谢谢', '感谢', '谢了', '多谢', 'thank'],
-              replies: ['不客气！有问题随时找我~', '客气啥！能帮到你我也开心~'] },
-            { patterns: ['再见', '拜拜', '走了', '先走了', 'bye'],
-              replies: ['再见啦！祝你有美好的一天~', '拜拜~ 下次再来找我玩呀！'] },
-            { patterns: ['你真聪明', '你好厉害', '你真棒', '夸你'],
-              replies: ['嘿嘿，谢谢你的夸奖！我会继续努力的~', '被你夸得我都不好意思了😳'] },
-            { patterns: ['你真笨', '你好蠢', '你啥都不会', '垃圾'],
-              replies: ['哎呀，我还在学习中嘛！给我点时间~', '别嫌弃我嘛，我会加油的！你多问我点问题，我就会进步~'] },
-            { patterns: ['心情', '不开心', '难过', '郁闷', '好累', '压力大'],
-              replies: ['别不开心呀！喝杯奶茶，写两行代码，心情就好了~ 有烦心事可以跟我说！', '累了就休息一下嘛，看个电影、听首歌，放松一下~'] },
-            { patterns: ['吃什么', '吃饭了吗', '午饭', '晚饭', '饿了'],
-              replies: ['我是AI不用吃饭~ 不过建议你吃点好吃的，对自己好一点！', '想吃啥就吃啥！人生苦短~'] },
-            { patterns: ['无聊', '好无聊', '没事做'],
-              replies: ['无聊的话跟我聊天呀！或者去玩玩贪吃蛇、逛逛选品店~', '那我们来聊天呀！你想聊什么？'] },
-        ];
-
-        const defaultReplies = [
-            '这是个好问题！你可以再具体描述一下吗？',
-            '嗯，我理解你的意思了，不过我还在学习中，这个问题得研究一下~',
-            '有意思！你为什么这么问呢？',
-            '哈哈，这个问题把我问住了！换个话题聊聊？',
-            '我觉得你说得有道理！不过还有点没懂，能再说详细点吗？',
-            '这是个深刻的问题，我们可以深入聊聊~'
-        ];
-
-        function getBotReply(userInput) {
-            const input = userInput.toLowerCase().trim();
-            conversationHistory.push({ user: userInput, time: new Date() });
-
-            const nameMatch = input.match(/我叫(.+)/);
-            if (nameMatch) {
-                userName = nameMatch[1].trim();
-                return `你好${userName}！很高兴认识你~ 以后我就叫你${userName}了！`;
+        // 调用同域 Pages Function（/api），由后端转发给大模型，key 不暴露
+        async function callAI(userText) {
+            chatMessages.push({ role: 'user', content: userText });
+            const res = await fetch('/api', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ messages: chatMessages })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.reply) {
+                throw new Error(data.error || ('请求失败 ' + res.status));
             }
-
-            for (const rule of rules) {
-                for (const pattern of rule.patterns) {
-                    if (input.includes(pattern.toLowerCase())) {
-                        lastTopic = pattern;
-                        const list = typeof rule.replies === 'function' ? rule.replies() : rule.replies;
-                        return list[Math.floor(Math.random() * list.length)];
-                    }
-                }
-            }
-
-            if (input.includes('你呢') || input.includes('你怎么样')) {
-                return '我挺好的呀！一直在等你找我聊天呢~';
-            }
-
-            let r = defaultReplies[Math.floor(Math.random() * defaultReplies.length)];
-            if (userName) r = `${userName}，${r}`;
-            return r;
+            chatMessages.push({ role: 'assistant', content: data.reply });
+            return data.reply;
         }
 
         function addMessage(text, isUser) {
@@ -438,22 +350,27 @@
             if (t) t.remove();
         }
 
-        function sendMessage() {
+        async function sendMessage() {
             const text = messageInput.value.trim();
-            if (!text) return;
+            if (!text || sendBtn.disabled) return;
             addMessage(text, true);
             messageInput.value = '';
             autoGrow(messageInput);
             sendBtn.disabled = true;
 
-            setTimeout(() => {
+            setTimeout(async () => {
                 showTyping();
-                setTimeout(() => {
+                try {
+                    const reply = await callAI(text);
                     hideTyping();
-                    addMessage(getBotReply(text), false);
+                    addMessage(reply, false);
+                } catch (err) {
+                    hideTyping();
+                    addMessage('不好意思，我刚刚走神了，没接上大脑，等会儿再问我一次？', false);
+                } finally {
                     sendBtn.disabled = false;
                     messageInput.focus();
-                }, 900 + Math.random() * 500);
+                }
             }, 250);
         }
 

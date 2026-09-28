@@ -146,6 +146,50 @@
             white-space: pre-wrap;
             word-break: break-word;
         }
+        .msg-text.streaming::after {
+            content: '▍';
+            margin-left: 1px;
+            animation: caretBlink 0.9s steps(2, start) infinite;
+        }
+        @keyframes caretBlink { to { visibility: hidden; } }
+
+        /* 思考过程区块（DeepSeek 风格，灰色小字、可折叠） */
+        .think {
+            margin: 2px 0 10px;
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 10px;
+            background: rgba(255,255,255,.05);
+            overflow: hidden;
+        }
+        .think-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 7px 11px;
+            cursor: pointer;
+            user-select: none;
+            font-size: 0.8rem;
+            color: rgba(220,220,232,.78);
+        }
+        .think-title { display: inline-flex; align-items: center; gap: 7px; }
+        .think-title::before {
+            content: '';
+            width: 7px; height: 7px; border-radius: 50%;
+            background: currentColor;
+            animation: thinkPulse 1s ease-in-out infinite;
+        }
+        .think.collapsed .think-title::before { display: none; }
+        @keyframes thinkPulse { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
+        .think-arrow { transition: transform .2s ease; }
+        .think.collapsed .think-arrow { transform: rotate(-90deg); }
+        .think-body {
+            padding: 0 11px 9px;
+            font-size: 0.8rem;
+            line-height: 1.65;
+            color: rgba(205,205,220,.72);
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
 
         .msg.user { flex-direction: row; }
         .msg.user .msg-body { order: 1; }
@@ -288,20 +332,50 @@
         // 发给真实大模型的对话记录（role / content）
         const chatMessages = [];
 
-        // 调用同域 Pages Function（/api），由后端转发给大模型，key 不暴露
-        async function callAI(userText) {
+        // 调用同域 Pages Function（/api），流式接收：handlers.reason 收到思考片段，handlers.token 收到正式回复片段
+        async function streamAI(userText, handlers) {
             chatMessages.push({ role: 'user', content: userText });
             const res = await fetch('/api', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ messages: chatMessages })
             });
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok || !data.reply) {
-                throw new Error(data.error || ('请求失败 ' + res.status));
+
+            if (!res.ok || !res.body) {
+                const d = await res.json().catch(() => ({}));
+                throw new Error(d.error || ('请求失败 ' + res.status));
             }
-            chatMessages.push({ role: 'assistant', content: data.reply });
-            return data.reply;
+
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let full = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+
+                let sep;
+                while ((sep = buffer.indexOf('\n\n')) >= 0) {
+                    const evt = buffer.slice(0, sep);
+                    buffer = buffer.slice(sep + 2);
+                    const line = evt.split('\n').find(l => l.startsWith('data:'));
+                    if (!line) continue;
+                    const payload = line.slice(5).trim();
+                    if (payload === '[DONE]') continue;
+                    try {
+                        const delta = JSON.parse(payload).choices[0].delta;
+                        const rs = delta.reasoning_content;
+                        if (rs) handlers.reason(rs);
+                        const ct = delta.content;
+                        if (ct) { full += ct; handlers.token(ct); }
+                    } catch (e) {}
+                }
+            }
+
+            chatMessages.push({ role: 'assistant', content: full });
+            return full;
         }
 
         function addMessage(text, isUser) {
@@ -334,6 +408,73 @@
             document.getElementById('chatScroll').scrollTop = document.getElementById('chatScroll').scrollHeight;
         }
 
+        // 创建带“思考过程”区块的机器人气泡（DeepSeek 风格：上方可折叠思考，下方正式回复）
+        function createBotMessage() {
+            if (welcome) welcome.style.display = 'none';
+            const msg = document.createElement('div');
+            msg.className = 'msg bot';
+
+            const avatar = document.createElement('div');
+            avatar.className = 'msg-avatar';
+            avatar.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path></svg>';
+
+            const body = document.createElement('div');
+            body.className = 'msg-body';
+            const name = document.createElement('div');
+            name.className = 'msg-name';
+            name.textContent = 'AI 助手';
+
+            const think = document.createElement('div');
+            think.className = 'think';
+            think.style.display = 'none';
+            const thinkHead = document.createElement('div');
+            thinkHead.className = 'think-head';
+            thinkHead.innerHTML = '<span class="think-title">正在思考</span><svg class="think-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+            const thinkBody = document.createElement('div');
+            thinkBody.className = 'think-body';
+            think.appendChild(thinkHead);
+            think.appendChild(thinkBody);
+
+            const textEl = document.createElement('div');
+            textEl.className = 'msg-text';
+
+            body.appendChild(name);
+            body.appendChild(think);
+            body.appendChild(textEl);
+            msg.appendChild(avatar);
+            msg.appendChild(body);
+            chatInner.appendChild(msg);
+
+            let hasReason = false;
+            let collapsed = false;
+            const scrollBox = document.getElementById('chatScroll');
+
+            thinkHead.addEventListener('click', () => {
+                collapsed = !collapsed;
+                thinkBody.style.display = collapsed ? 'none' : 'block';
+                think.classList.toggle('collapsed', collapsed);
+            });
+
+            return {
+                appendReason(piece) {
+                    if (!hasReason) { hasReason = true; think.style.display = 'block'; }
+                    thinkBody.textContent += piece;
+                    scrollBox.scrollTop = scrollBox.scrollHeight;
+                },
+                finishThink(sec) {
+                    if (!hasReason) { think.remove(); return; }
+                    thinkHead.querySelector('.think-title').textContent = '已深度思考（用时 ' + sec.toFixed(1) + ' 秒）';
+                    thinkBody.style.display = 'none';
+                    think.classList.add('collapsed');
+                    collapsed = true;
+                },
+                appendText(piece) {
+                    textEl.textContent += piece;
+                    scrollBox.scrollTop = scrollBox.scrollHeight;
+                }
+            };
+        }
+
         function showTyping() {
             const msg = document.createElement('div');
             msg.className = 'msg bot';
@@ -360,10 +501,31 @@
 
             setTimeout(async () => {
                 showTyping();
-                try {
-                    const reply = await callAI(text);
+                let bot = null;
+                let thinkDone = false;
+                const t0 = Date.now();
+                const ensureBot = () => {
                     hideTyping();
-                    addMessage(reply, false);
+                    bot = createBotMessage();
+                };
+                try {
+                    const full = await streamAI(text, {
+                        reason: (piece) => {
+                            if (!bot) ensureBot();
+                            bot.appendReason(piece);
+                        },
+                        token: (piece) => {
+                            if (!bot) ensureBot();
+                            if (!thinkDone) { bot.finishThink((Date.now() - t0) / 1000); thinkDone = true; }
+                            bot.appendText(piece);
+                        }
+                    });
+                    if (!bot) {
+                        hideTyping();
+                        addMessage(full || '（我张了张嘴，却没说出话来……）', false);
+                    } else if (!thinkDone) {
+                        bot.finishThink((Date.now() - t0) / 1000);
+                    }
                 } catch (err) {
                     hideTyping();
                     addMessage('不好意思，我刚刚走神了，没接上大脑，等会儿再问我一次？', false);

@@ -1,65 +1,57 @@
-// Pages Function：部署后路由为 /api（与聊天页面同域，国内可访问）
-// 需在 Pages 项目 → Settings → Bindings(Functions) 里绑定 Workers AI，变量名 AI
+// Cloudflare Pages Functions 入口：访问 /api 时执行
+// 作用：前端只和同域的 /api 通信，由这里调用 Workers AI，不暴露任何第三方密钥
+// 流式输出（SSE）：模型一边生成一边把文字推给前端，实现打字机效果，体感更快
 
-export async function onRequest(context) {
-  const { request, env } = context;
-
-  if (request.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders() });
-  }
-  if (request.method !== 'POST') {
-    return json({ error: '只支持 POST 请求' }, 405);
-  }
+export async function onRequestPost(context) {
+  const { env, request } = context;
 
   try {
-    const body = await request.json();
+    const body = await request.json().catch(() => ({}));
     const messages = Array.isArray(body.messages) ? body.messages : [];
 
-    const result = await env.AI.run('@cf/zai-org/glm-4.7-flash', {
-      stream: false,
+    if (!messages.length) {
+      return json({ error: '没有收到消息内容' }, 400);
+    }
+
+    // stream:true 边想边返回（reasoning_content 思考 + content 正文）；max_tokens 给足，避免思考未完被截断
+    const upstream = await env.AI.run('@cf/zai-org/glm-4.7-flash', {
+      stream: true,
+      max_tokens: 3000,
       messages: [
         {
           role: 'system',
           content:
-            '你是“AI小助手”，由快乐大野鸡开发。你用简体中文交流，性格友好、有点冷幽默，擅长聊天和解答编程问题，回答简洁，一般不超过两三句话，除非用户明确要求详细。'
+            '你是“AI小助手”，由快乐大野鸡开发。你用简体中文交流，性格友好、有点冷幽默，擅长聊天和解答编程问题。你可以先在思考里简短理一下思路，再给出正式回答；正式回答简洁清楚，一般不超过几段，写代码只给关键部分，除非用户明确要求详细。'
         },
         ...messages
       ]
     });
 
-    return json({ reply: extractText(result) });
-  } catch (err) {
-    return json({ error: '服务器开小差了：' + (err && err.message ? err.message : String(err)) }, 500);
+    // 该模型流式直接返回 OpenAI 兼容的 SSE 字节流，原样透传给前端（无需自行拼装）
+    return new Response(upstream, {
+      headers: {
+        'Content-Type': 'text/event-stream; charset=utf-8',
+        'Cache-Control': 'no-cache, no-transform',
+        Connection: 'keep-alive',
+        'Access-Control-Allow-Origin': '*'
+      }
+    });
+  } catch (error) {
+    return json({ error: '服务器开小差了：' + error.message }, 500);
   }
 }
 
-function extractText(out) {
-  if (out == null) return '';
-  if (typeof out === 'string') return out;
-  if (typeof out.response === 'string') return out.response;
-  if (typeof out.text === 'string') return out.text;
-  if (typeof out.output === 'string') return out.output;
-  if (Array.isArray(out.choices) && out.choices[0]) {
-    const c = out.choices[0];
-    if (typeof c === 'string') return c;
-    if (c && c.message && typeof c.message.content === 'string') return c.message.content;
-    if (c && typeof c.text === 'string') return c.text;
-  }
-  try { return JSON.stringify(out); } catch (e) { return String(out); }
+// 直接在浏览器打开 /api 时给个友好提示
+export function onRequestGet() {
+  return json({ ok: true, message: 'AI 接口正常，请在聊天页面发送消息。' });
 }
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: corsHeaders({ 'content-type': 'application/json; charset=utf-8' })
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Access-Control-Allow-Origin': '*'
+    }
   });
-}
-
-function corsHeaders(extra = {}) {
-  return {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    ...extra
-  };
 }

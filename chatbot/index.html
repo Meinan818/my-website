@@ -147,18 +147,27 @@
             word-break: break-word;
         }
         .msg-text.streaming::after {
-            content: '▍';
-            margin-left: 1px;
-            animation: caretBlink 0.9s steps(2, start) infinite;
+            content: '';
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            margin-left: 4px;
+            border-radius: 50%;
+            background: var(--brand);
+            vertical-align: baseline;
+            animation: dotBlink 1.05s ease-in-out infinite;
         }
-        @keyframes caretBlink { to { visibility: hidden; } }
+        @keyframes dotBlink {
+            0%, 100% { opacity: .25; transform: translateY(3px) scale(.8); }
+            50% { opacity: 1; transform: translateY(0) scale(1); }
+        }
 
-        /* 思考过程区块（DeepSeek 风格，灰色小字、可折叠） */
+        /* 思考过程区块（DeepSeek 风格，浅灰小字、可折叠，适配浅色页面） */
         .think {
             margin: 2px 0 10px;
-            border: 1px solid rgba(255,255,255,.12);
+            border: 1px solid rgba(15,23,42,.09);
             border-radius: 10px;
-            background: rgba(255,255,255,.05);
+            background: #f5f6f8;
             overflow: hidden;
         }
         .think-head {
@@ -169,7 +178,7 @@
             cursor: pointer;
             user-select: none;
             font-size: 0.8rem;
-            color: rgba(220,220,232,.78);
+            color: #8b929d;
         }
         .think-title { display: inline-flex; align-items: center; gap: 7px; }
         .think-title::before {
@@ -186,20 +195,32 @@
             padding: 0 11px 9px;
             font-size: 0.8rem;
             line-height: 1.65;
-            color: rgba(205,205,220,.72);
+            color: #8b929d;
             white-space: pre-wrap;
             word-break: break-word;
         }
+        /* markdown 渲染后改用 HTML 标签换行 */
+        .msg-text.md, .think-body.md { white-space: normal; }
+        .msg-text ul, .msg-text ol, .think-body ul, .think-body ol { margin: 4px 0 6px; padding-left: 20px; }
+        .msg-text li, .think-body li { margin: 2px 0; }
+        .msg-text p, .think-body p { margin: 0 0 6px; }
+        .msg-text code, .think-body code {
+            background: rgba(15,23,42,.07);
+            padding: 1px 5px; border-radius: 5px;
+            font-family: ui-monospace, Menlo, Consolas, monospace;
+            font-size: .88em;
+        }
+        .msg-text strong, .think-body strong { font-weight: 700; }
 
         .msg.user { flex-direction: row; }
-        .msg.user .msg-body { order: 1; }
+        .msg.user .msg-body { order: 1; text-align: right; }
         .msg.user .msg-text {
             background: var(--user-bg);
             padding: 11px 15px;
             border-radius: 12px;
             display: inline-block;
+            text-align: left;
         }
-        .msg.user .msg-body { text-align: right; }
 
         /* 打字指示 */
         .typing {
@@ -409,7 +430,7 @@
         }
 
         // 打字机队列：网络到达的文本先入队，再按固定节奏逐字渲染，避免一大片蹦出
-        function makeTyper(render) {
+        function makeTyper(render, interval = 18) {
             let queue = '';
             let timer = null;
             const tick = () => {
@@ -424,7 +445,7 @@
             return {
                 feed(text) {
                     queue += text;
-                    if (!timer) timer = setInterval(tick, 18);
+                    if (!timer) timer = setInterval(tick, interval);
                 },
                 flush() {
                     if (queue.length) { render(queue); queue = ''; }
@@ -432,6 +453,43 @@
                 },
                 get isBusy() { return !!timer || queue.length > 0; }
             };
+        }
+
+        // 轻量 Markdown 渲染：先转义防 XSS，再处理列表/标题/加粗/斜体/行内代码
+        function escapeHtml(s) {
+            return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+        function inlineMd(s) {
+            s = escapeHtml(s);
+            s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+            s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            s = s.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
+            return s;
+        }
+        function renderMarkdown(text) {
+            const lines = text.replace(/\r/g, '').split('\n');
+            let html = '', list = null;
+            const closeList = () => { if (list) { html += '</' + list + '>'; list = null; } };
+            for (let raw of lines) {
+                const line = raw.trim();
+                let m;
+                if ((m = line.match(/^(\d+)[.)]\s+(.*)/))) {
+                    if (list !== 'ol') { closeList(); html += '<ol>'; list = 'ol'; }
+                    html += '<li>' + inlineMd(m[2]) + '</li>';
+                } else if ((m = line.match(/^[*\-•]\s+(.*)/))) {
+                    if (list !== 'ul') { closeList(); html += '<ul>'; list = 'ul'; }
+                    html += '<li>' + inlineMd(m[1]) + '</li>';
+                } else if (/^#{1,6}\s+/.test(line)) {
+                    closeList();
+                    html += '<div style="font-weight:700;margin:6px 0 4px">' + inlineMd(line.replace(/^#{1,6}\s+/, '')) + '</div>';
+                } else if (line === '') {
+                    closeList(); html += '<br>';
+                } else {
+                    closeList(); html += inlineMd(line) + '<br>';
+                }
+            }
+            closeList();
+            return html.replace(/(<br>)+$/, '');
         }
 
         // 创建带“思考过程”区块的机器人气泡（DeepSeek 风格：上方可折叠思考，下方正式回复）
@@ -476,9 +534,15 @@
             let textStarted = false;
             const scrollBox = document.getElementById('chatScroll');
 
-            // 思考、正文各用一个打字机，匀速逐字显示
-            const reasonTyper = makeTyper(ch => { thinkBody.textContent += ch; });
-            const textTyper = makeTyper(ch => { textEl.textContent += ch; });
+            // 智能跟随滚动：仅当用户停在底部附近才自动滚，上滑查看历史时不强行拉回
+            let pinned = true;
+            const isPinned = () => scrollBox.scrollHeight - scrollBox.scrollTop - scrollBox.clientHeight < 80;
+            scrollBox.addEventListener('scroll', () => { pinned = isPinned(); });
+            const follow = () => { if (pinned) scrollBox.scrollTop = scrollBox.scrollHeight; };
+
+            // 思考、正文各用一个打字机；正文节奏放慢一点
+            const reasonTyper = makeTyper(ch => { thinkBody.textContent += ch; follow(); }, 18);
+            const textTyper = makeTyper(ch => { textEl.textContent += ch; follow(); }, 34);
 
             thinkHead.addEventListener('click', () => {
                 collapsed = !collapsed;
@@ -486,15 +550,18 @@
                 think.classList.toggle('collapsed', collapsed);
             });
 
+            follow();
+
             return {
                 appendReason(piece) {
                     if (!hasReason) { hasReason = true; think.style.display = 'block'; }
                     reasonTyper.feed(piece);
-                    scrollBox.scrollTop = scrollBox.scrollHeight;
                 },
                 finishThink(sec) {
-                    reasonTyper.flush(); // 剩余思考立即补全再折叠，不丢内容
+                    reasonTyper.flush(); // 剩余思考立即补全
                     if (!hasReason) { think.remove(); return; }
+                    thinkBody.classList.add('md');
+                    thinkBody.innerHTML = renderMarkdown(thinkBody.textContent);
                     thinkHead.querySelector('.think-title').textContent = '已深度思考（用时 ' + sec.toFixed(1) + ' 秒）';
                     thinkBody.style.display = 'none';
                     think.classList.add('collapsed');
@@ -503,13 +570,18 @@
                 appendText(piece) {
                     if (!textStarted) { textStarted = true; textEl.classList.add('streaming'); }
                     textTyper.feed(piece);
-                    scrollBox.scrollTop = scrollBox.scrollHeight;
                 },
                 finalize() {
                     return new Promise(res => {
                         const check = () => {
-                            if (!textTyper.isBusy) { textEl.classList.remove('streaming'); res(); }
-                            else setTimeout(check, 30);
+                            if (!textTyper.isBusy) {
+                                textEl.classList.add('md');
+                                textEl.innerHTML = renderMarkdown(textEl.textContent);
+                                textEl.classList.remove('streaming');
+                                res();
+                            } else {
+                                setTimeout(check, 30);
+                            }
                         };
                         check();
                     });

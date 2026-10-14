@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>饭否外卖 - 快乐大野鸡</title>
+<meta name="description" content="饭否外卖：顾客下单、商家出餐、骑手配送，三端联动，走同一条订单流水线。类型 三端外卖系统，技术 React 19、TypeScript、Tailwind、Vite、Supabase（PostgreSQL + 实时推送）。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' fill='%2317181A'/><text x='32' y='46' font-size='40' text-anchor='middle' fill='%23EFF0EC' font-family='sans-serif'>野</text></svg>">
+<script>document.documentElement.classList.add('js')</script>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+
+<div class="progress" aria-hidden="true"><span class="progress__in" id="progress"></span></div>
+
+<a class="skip" href="#main">跳到正文</a>
+
+<header class="band--paper">
+    <div class="wrap top">
+        <a class="top__mark" href="../index.html">快乐大野鸡</a>
+        <nav class="top__nav" aria-label="分节导航">
+            <a href="../index.html#work">三个产品</a>
+            <a href="../index.html#small">其他项目</a>
+            <a href="../index.html#contact">联系</a>
+        </nav>
+    </div>
+</header>
+
+<main id="main">
+    <section class="dh dh--theme" data-motif="receipt" style="--theme:#FF7A1F; --theme-ink:#111111">
+        <span class="dh__motif" aria-hidden="true"></span>
+        <div class="wrap">
+            <h1 class="dh__name mask"><span class="line"><span>饭否外卖</span></span></h1>
+            <p class="dh__hook" data-rise style="--i:1">顾客下单、商家出餐、骑手配送，三端联动，走同一条订单流水线。</p>
+            <dl class="dh__facts" data-rise style="--i:2">
+                <div><dt>类型</dt><dd>三端外卖系统</dd></div>
+                <div><dt>技术</dt><dd>React 19、TypeScript、Tailwind、Vite、Supabase（PostgreSQL + 实时推送）</dd></div>
+                <div><dt>上线</dt><dd><a class="link" href="https://jianwei-57i.pages.dev/" target="_blank" rel="noopener">jianwei-57i.pages.dev</a></dd></div>
+                <div><dt>源码</dt><dd><a class="link" href="https://github.com/Meinan818/fanfou-waimai" target="_blank" rel="noopener">github.com/Meinan818/fanfou-waimai</a></dd></div>
+            </dl>
+            <p class="dh__acts" data-rise style="--i:3">
+                <a class="btn" href="https://jianwei-57i.pages.dev/" target="_blank" rel="noopener">打开 jianwei-57i.pages.dev</a>
+                <a class="link dh__back" href="../index.html#work">回到合集</a>
+            </p>
+        </div>
+    </section>
+
+    <div class="band--white">
+        <div class="wrap">
+    <figure class="dh__pair" data-rise style="--i:0">
+        <span class="shot shot--a">
+            <img src="../assets/phone-fanfou.jpg" width="720" height="1561" loading="lazy" decoding="async" alt="饭否外卖顾客端首页：顶部是收货地址与搜索框，中间一排分类图标和一张菜品横幅，下面是“为你推荐”的三张菜品卡，底部四个导航（首页、订单、消息、我的）">
+        </span>
+        <span class="shot shot--b">
+            <img src="../assets/phone-fanfou-2.jpg" width="520" height="1127" loading="lazy" decoding="async" alt="饭否外卖的启动页：顾客、商家、骑手三张身份卡各占一行，进去之后是三套互不相通的界面">
+        </span>
+    </figure>
+        </div>
+    </div>
+
+    <section class="dh__does band--paper">
+        <div class="wrap">
+            <h2 class="mask" data-rise style="--i:0"><span class="line"><span>它能干什么</span></span></h2>
+            <ul class="dh__list">
+                <li data-rise style="--i:0">三端各自独立：顾客、商家、骑手三套账号池、三套路由前缀，端内不出现跨端跳转；登录时角色对不上就直接登出</li>
+                <li data-rise style="--i:1">9 种订单状态：待支付 → 待接单 → 备餐中 → 待取餐 → 配送中 → 已送达，另有已取消 / 商家拒单 / 到店自取</li>
+                <li data-rise style="--i:2">超时规则：支付 15 分钟没完成自动取消；商家 8 分钟没接单会打上「已超时」，顾客可以催单或取消</li>
+                <li data-rise style="--i:3">实时同步：顾客下单，商家端不刷新就能看到新订单；聊天消息和未读数跨端跟着变</li>
+                <li data-rise style="--i:0">钱要原子：扣款、写流水、推进订单状态在一个数据库事务里一次完成；每次支付带操作编号，双击或网络重试都不会重复扣</li>
+                <li data-rise style="--i:1">商家经营：菜品上下架、售罄、改价、库存，规格与加料，自定义分类，满减与店铺折扣，财务账单</li>
+                <li data-rise style="--i:2">服务与社交：顾客↔商家、骑手↔商家的即时聊天，通知中心，五星图文评价与商家回复，退款申请与配送异常上报</li>
+                <li data-rise style="--i:3">数据层：25 张表、57 条行级权限策略，余额不允许前端直接改，只能通过数据库函数修改并在函数内再校验身份</li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="dh__made band--paper">
+        <div class="wrap">
+            <h2 class="mask" data-rise style="--i:0"><span class="line"><span>我写它的时候</span></span></h2>
+            <p data-rise style="--i:1">这是我课程作业里最认真的一份。一开始只是想做个点单页，做着做着把商家端和骑手端也做出来了——三端连起来之后才看得出订单状态机到底有没有写对。</p>
+            <p data-rise style="--i:2">真机点一遍抓到过两个类型检查和构建都发现不了的毛病：页面永久卡在加载、订单明细被重复写入。从那以后我就不太相信「编译通过」这四个字了，所以现在跑的是真浏览器加真数据库的巡检。</p>
+        </div>
+    </section>
+
+    <section class="dh__more band--ink">
+        <div class="wrap">
+            <h2 class="mask" data-rise style="--i:0"><span class="line"><span>别的九个</span></span></h2>
+            <div class="dh__more-grid">
+                <div class="dh__more-col dh__more-col--products">
+                    <p class="dh__more-label">三个产品</p>
+                    <ul class="dh__more-list dh__more-list--3">
+                    <li class="dh__more-item" data-rise style="--i:0">
+                        <a href="maskaria.html">
+                            <span class="dh__more-thumb"><img src="../assets/thumbs/maskaria.jpg" width="600" height="450" loading="lazy" decoding="async" alt="MASKARIA的界面截图"></span>
+                            <span class="dh__more-name">MASKARIA</span>
+                            <span class="dh__more-kind">成长记录 App</span>
+                        </a>
+                    </li>
+                    <li class="dh__more-item" data-rise style="--i:1">
+                        <a href="miaoji.html">
+                            <span class="dh__more-thumb"><img src="../assets/thumbs/miaoji.jpg" width="600" height="450" loading="lazy" decoding="async" alt="喵叽智账的界面截图"></span>
+                            <span class="dh__more-name">喵叽智账</span>
+                            <span class="dh__more-kind">记账 Web 应用</span>
+                        </a>
+                    </li>
+                    </ul>
+                </div>
+                <div class="dh__more-col dh__more-col--practice">
+                    <p class="dh__more-label">其他项目</p>
+                    <ul class="dh__more-list dh__more-list--4">
+                    <li class="dh__more-item" data-rise style="--i:0">
+                        <a href="notes.html">
+                            <span class="dh__more-thumb"><img src="../assets/thumbs/notes.jpg" width="600" height="450" loading="lazy" decoding="async" alt="在线笔记应用的界面截图"></span>
+                            <span class="dh__more-name">在线笔记应用</span>
+                            <span class="dh__more-kind">Web 应用</span>
+                        </a>
+                    </li>
+                    <li class="dh__more-item" data-rise style="--i:1">
+                        <a href="chatbot.html">
+                            <span class="dh__more-thumb"><img src="../assets/thumbs/chatbot.jpg" width="600" height="450" loading="lazy" decoding="async" alt="智能聊天机器人的界面截图"></span>
+                            <span class="dh__more-name">智能聊天机器人</span>
+                            <span class="dh__more-kind">AI 项目</span>
+                        </a>
+                    </li>
+                    <li class="dh__more-item" data-rise style="--i:2">
+                        <a href="ecommerce.html">
+                            <span class="dh__more-thumb"><img src="../assets/thumbs/ecommerce.jpg" width="600" height="450" loading="lazy" decoding="async" alt="简易电商平台的界面截图"></span>
+                            <span class="dh__more-name">简易电商平台</span>
+                            <span class="dh__more-kind">电商系统</span>
+                        </a>
+                    </li>
+                    <li class="dh__more-item" data-rise style="--i:3">
+                        <a href="dashboard.html">
+                            <span class="dh__more-thumb"><img src="../assets/thumbs/dashboard.jpg" width="600" height="450" loading="lazy" decoding="async" alt="数据可视化看板的界面截图"></span>
+                            <span class="dh__more-name">数据可视化看板</span>
+                            <span class="dh__more-kind">数据分析</span>
+                        </a>
+                    </li>
+                    <li class="dh__more-item" data-rise style="--i:0">
+                        <a href="snake.html">
+                            <span class="dh__more-thumb"><img src="../assets/thumbs/snake.jpg" width="600" height="450" loading="lazy" decoding="async" alt="贪吃蛇游戏的界面截图"></span>
+                            <span class="dh__more-name">贪吃蛇游戏</span>
+                            <span class="dh__more-kind">小游戏</span>
+                        </a>
+                    </li>
+                    <li class="dh__more-item" data-rise style="--i:1">
+                        <a href="todo.html">
+                            <span class="dh__more-thumb"><img src="../assets/thumbs/todo.jpg" width="600" height="450" loading="lazy" decoding="async" alt="待办事项清单的界面截图"></span>
+                            <span class="dh__more-name">待办事项清单</span>
+                            <span class="dh__more-kind">工具应用</span>
+                        </a>
+                    </li>
+                    <li class="dh__more-item" data-rise style="--i:2">
+                        <a href="lizi.html">
+                            <span class="dh__more-thumb"><img src="../assets/thumbs/lizi.jpg" width="600" height="450" loading="lazy" decoding="async" alt="栗子救援队的界面截图"></span>
+                            <span class="dh__more-name">栗子救援队</span>
+                            <span class="dh__more-kind">小游戏</span>
+                        </a>
+                    </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="foot band--ink">
+    <div class="wrap">
+        <p class="foot__name" data-rise style="--i:0">快乐大野鸡</p>
+        <div class="foot__grid">
+            <div class="foot__places">
+                <p>计算机科学与技术，本科在读</p>
+                <p><a class="link" href="mailto:13643270611@163.com">13643270611@163.com</a>　微信 lllqx0611</p>
+                <p><a class="link" href="https://github.com/Meinan818" target="_blank" rel="noopener">github.com/Meinan818</a></p>
+            </div>
+            <nav class="foot__nav" aria-label="分节导航">
+                <a class="link" href="../index.html#work">三个产品</a>
+                <a class="link" href="../index.html#small">其他项目</a>
+                <a class="link" href="../index.html#base">课程设计与技能</a>
+                <a class="link" href="../index.html#contact">联系</a>
+            </nav>
+            <p class="foot__legal">这一页上的东西现在还都开着。<br>我超威写的我好累啊。<br>© 快乐大野鸡</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    (function () {
+        'use strict';
+        var calm = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+        function prefersCalm() { return !!(calm && calm.matches); }
+
+        var targets = Array.prototype.slice.call(document.querySelectorAll('[data-rise], .mask'));
+        if ('IntersectionObserver' in window && targets.length) {
+            var io = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-in');
+                        io.unobserve(entry.target);
+                    }
+                });
+            }, { rootMargin: '0px 0px 10% 0px', threshold: 0 });
+            targets.forEach(function (el) { io.observe(el); });
+        } else {
+            targets.forEach(function (el) { el.classList.add('is-in'); });
+        }
+
+        if (!prefersCalm() && window.requestAnimationFrame) {
+            var shots = Array.prototype.slice.call(document.querySelectorAll('.dh__pair .shot--a'));
+            var progress = document.getElementById('progress');
+            var ticking = false;
+            var drift = function () {
+                ticking = false;
+                var mid = window.innerHeight / 2;
+                shots.forEach(function (el) {
+                    var box = el.getBoundingClientRect();
+                    if (box.bottom < -200 || box.top > window.innerHeight + 200) return;
+                    var offset = (box.top + box.height / 2 - mid) / window.innerHeight;
+                    el.style.setProperty('--drift', Math.max(-30, Math.min(30, offset * -44)).toFixed(1) + 'px');
+                });
+                if (progress) {
+                    var span = document.documentElement.scrollHeight - window.innerHeight;
+                    progress.style.setProperty('--p', Math.max(0, Math.min(1, span > 0 ? window.scrollY / span : 0)) * 100 + '%');
+                }
+            };
+            var onScroll = function () {
+                if (ticking) return;
+                ticking = true;
+                window.requestAnimationFrame(drift);
+            };
+            window.addEventListener('scroll', onScroll, { passive: true });
+            window.addEventListener('resize', onScroll);
+            drift();
+        }
+    })();
+</script>
+</body>
+</html>

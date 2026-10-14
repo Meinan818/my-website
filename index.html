@@ -1,1376 +1,539 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>快乐大野鸡 - 神的作品集</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💻</text></svg>">
-    <link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=ZCOOL+KuaiLe&family=ZCOOL+XiaoWei&family=Long+Cang&display=swap">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-            background-color: #f8f9fc;
-            color: #333;
-            overflow-x: hidden;
-            line-height: 1.6;
-        }
-
-        /* 浮动装饰元素 */
-        .floating-shapes {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-            overflow: hidden;
-        }
-
-        .shape {
-            position: absolute;
-            border-radius: 12px;
-            opacity: 0.2;
-        }
-
-        .shape-1 {
-            width: 200px;
-            height: 200px;
-            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
-            top: 10%;
-            left: 5%;
-            animation: float1 8s ease-in-out infinite;
-        }
-
-        .shape-2 {
-            width: 150px;
-            height: 150px;
-            background: linear-gradient(135deg, #a29bfe, #6c5ce7);
-            top: 60%;
-            right: 8%;
-            animation: float2 10s ease-in-out infinite;
-        }
-
-        .shape-3 {
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(135deg, #6c5ce7, #74b9ff);
-            bottom: 20%;
-            left: 15%;
-            animation: float3 7s ease-in-out infinite;
-        }
-
-        .shape-4 {
-            width: 180px;
-            height: 180px;
-            border: 2px dashed #6c5ce7;
-            top: 30%;
-            right: 15%;
-            animation: float1 9s ease-in-out infinite reverse;
-        }
-
-        .shape-5 {
-            width: 120px;
-            height: 120px;
-            border: 2px dashed #a29bfe;
-            bottom: 10%;
-            right: 25%;
-            animation: float2 11s ease-in-out infinite reverse;
-        }
-
-        @keyframes float1 {
-            0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
-            50% { transform: translateY(-40px) rotate(8deg) scale(1.05); }
-        }
-
-        @keyframes float2 {
-            0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
-            50% { transform: translateY(30px) rotate(-8deg) scale(1.08); }
-        }
-
-        @keyframes float3 {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(30px, -25px) scale(1.15); }
-        }
-
-        /* 导航栏 */
-        nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            z-index: 100;
-            box-shadow: 0 2px 20px rgba(108, 92, 231, 0.08);
-            transition: all 0.3s ease;
-        }
-
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #6c5ce7;
-        }
-
-        .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-
-        .nav-links {
-            display: none;
-            list-style: none;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: #555;
-            font-weight: 500;
-            transition: color 0.3s ease;
-            position: relative;
-        }
-
-        .nav-links a:hover {
-            color: #6c5ce7;
-        }
-
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: #6c5ce7;
-            transition: width 0.3s ease;
-        }
-
-        .nav-links a:hover::after {
-            width: 100%;
-        }
-
-        .mobile-menu-btn {
-            display: none;
-            background: #f0edff;
-            border: none;
-            color: #6c5ce7;
-            cursor: pointer;
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-
-        .mobile-menu-btn:active {
-            background: #6c5ce7;
-            color: white;
-        }
-
-        /* 主要内容 */
-        main {
-            position: relative;
-            z-index: 1;
-        }
-
-        .section {
-            padding: 100px 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        /* Hero 区域 */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding-top: 80px;
-        }
-
-        .hero-card {
-            background: white;
-            padding: 4rem 3rem;
-            border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(108, 92, 231, 0.15);
-            max-width: 600px;
-            width: 100%;
-            animation: fadeInUp 0.8s ease;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .hero-avatar {
-            width: 120px;
-            height: 120px;
-            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
-            border-radius: 50%;
-            margin: 0 auto 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            color: white;
-            box-shadow: 0 10px 30px rgba(108, 92, 231, 0.3);
-        }
-
-        .hero h1 {
-            font-size: 2.5rem;
-            color: #333;
-            margin-bottom: 1rem;
-            font-weight: 700;
-        }
-
-        .hero .subtitle {
-            font-family: 'Long Cang', 'ZCOOL XiaoWei', 'Kaiti SC', 'STKaiti', '楷体', cursive;
-            font-size: 1.05rem;
-            color: #b6aee6;
-            margin-bottom: 1.5rem;
-            font-weight: 400;
-            letter-spacing: 3px;
-        }
-
-        .hero p {
-            color: #666;
-            margin-bottom: 2rem;
-            font-size: 1.05rem;
-        }
-
-        .hero-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 0.8rem 2rem;
-            border-radius: 12px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: none;
-            font-size: 1rem;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #6c5ce7, #7c6cf0);
-            color: white;
-            box-shadow: 0 5px 20px rgba(108, 92, 231, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4);
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: #6c5ce7;
-            border: 2px solid #6c5ce7;
-        }
-
-        .btn-outline:hover {
-            background: #6c5ce7;
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        /* 区块标题 */
-        .section-title {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .section-title h2 {
-            font-size: 2.2rem;
-            color: #333;
-            margin-bottom: 0.5rem;
-            font-weight: 700;
-        }
-
-        .section-title .divider {
-            width: 60px;
-            height: 4px;
-            background: linear-gradient(90deg, #6c5ce7, #a29bfe);
-            border-radius: 2px;
-            margin: 0 auto;
-        }
-
-        .section-title p {
-            color: #888;
-            margin-top: 1rem;
-        }
-
-        /* 关于我 */
-        .about-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
-            align-items: center;
-        }
-
-        .about-card {
-            background: white;
-            padding: 2.5rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(108, 92, 231, 0.1);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .about-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 50px rgba(108, 92, 231, 0.2);
-        }
-
-        .about-card h3 {
-            color: #6c5ce7;
-            margin-bottom: 1rem;
-            font-size: 1.3rem;
-        }
-
-        .about-card p {
-            color: #666;
-            line-height: 1.8;
-        }
-
-        .info-list {
-            list-style: none;
-        }
-
-        .info-list li {
-            padding: 0.8rem 0;
-            border-bottom: 1px solid #f0f0f0;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .info-list li:last-child {
-            border-bottom: none;
-        }
-
-        .info-list .label {
-            color: #888;
-        }
-
-        .info-list .value {
-            color: #333;
-            font-weight: 500;
-        }
-
-        /* 技能 */
-        .skills-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .skill-category {
-            background: white;
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 5px 20px rgba(108, 92, 231, 0.08);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .skill-category:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 15px 35px rgba(108, 92, 231, 0.2);
-        }
-
-        .skill-category h4 {
-            color: #6c5ce7;
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .skill-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .skill-tag {
-            padding: 6px 14px;
-            background: linear-gradient(135deg, #f0edff, #e8e4ff);
-            color: #6c5ce7;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-
-        /* 项目卡片 */
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2rem;
-        }
-
-        .project-card {
-            background: white;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 10px 40px rgba(108, 92, 231, 0.1);
-            transition: all 0.4s ease;
-        }
-
-        .project-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 50px rgba(108, 92, 231, 0.2);
-        }
-
-        .project-image {
-            height: 180px;
-            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 3rem;
-        }
-
-        .project-body {
-            padding: 1.8rem;
-        }
-
-        .project-tag {
-            display: inline-block;
-            padding: 4px 12px;
-            background: #f0edff;
-            color: #6c5ce7;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin-bottom: 0.8rem;
-        }
-
-        .project-card h3 {
-            color: #333;
-            margin-bottom: 0.8rem;
-            font-size: 1.25rem;
-        }
-
-        .project-card p {
-            color: #666;
-            font-size: 0.95rem;
-            line-height: 1.7;
-            margin-bottom: 1rem;
-        }
-
-        .project-tech {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 1.2rem;
-        }
-
-        .tech-tag {
-            padding: 4px 10px;
-            background: #f8f7ff;
-            color: #888;
-            border-radius: 8px;
-            font-size: 0.75rem;
-        }
-
-        .project-links {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .project-links a {
-            text-decoration: none;
-            color: #6c5ce7;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-        }
-
-        .project-links a:hover {
-            color: #4a3fbf;
-        }
-
-        /* 课程设计 */
-        .courses-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .course-card {
-            background: white;
-            padding: 1.8rem;
-            border-radius: 16px;
-            box-shadow: 0 5px 20px rgba(108, 92, 231, 0.08);
-            border-left: 4px solid #6c5ce7;
-            transition: all 0.3s ease;
-        }
-
-        .course-card:hover {
-            transform: translateX(5px);
-            box-shadow: 0 10px 30px rgba(108, 92, 231, 0.15);
-        }
-
-        .course-card h4 {
-            color: #333;
-            margin-bottom: 0.5rem;
-            font-size: 1.1rem;
-        }
-
-        .course-card .course-name {
-            color: #6c5ce7;
-            font-size: 0.85rem;
-            margin-bottom: 0.8rem;
-            font-weight: 500;
-        }
-
-        .course-card p {
-            color: #666;
-            font-size: 0.9rem;
-            line-height: 1.6;
-        }
-
-        /* 联系 */
-        .contact-card {
-            background: white;
-            padding: 3rem;
-            border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(108, 92, 231, 0.15);
-            text-align: center;
-            max-width: 700px;
-            margin: 0 auto;
-        }
-
-        .contact-methods {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .contact-item {
-            padding: 1.5rem;
-            background: #f8f7ff;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .contact-item:hover {
-            background: #f0edff;
-            transform: translateY(-3px);
-        }
-
-        .contact-item .icon {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .contact-item .label {
-            color: #888;
-            font-size: 0.85rem;
-            margin-bottom: 0.3rem;
-        }
-
-        .contact-item .value {
-            color: #333;
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-
-        /* 页脚 */
-        footer {
-            background: white;
-            text-align: center;
-            padding: 2rem;
-            color: #888;
-            margin-top: 3rem;
-            box-shadow: 0 -5px 20px rgba(108, 92, 231, 0.05);
-        }
-
-        /* 滚动动画 */
-        .fade-in {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.6s ease;
-        }
-
-        .fade-in.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* 响应式 */
-        @media (max-width: 768px) {
-            .nav-links {
-                display: flex !important;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 280px;
-                max-width: 80vw;
-                height: 100vh;
-                background: white;
-                flex-direction: column;
-                padding: 0;
-                gap: 0;
-                box-shadow: 2px 0 30px rgba(108, 92, 231, 0.15);
-                transform: translateX(-100%);
-                transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                z-index: 1002;
-                overflow-y: auto;
-            }
-
-            .nav-links.active {
-                transform: translateX(0);
-            }
-
-            .nav-links li {
-                border-bottom: none;
-            }
-
-            /* 顶部header */
-            .menu-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 1.2rem 1.5rem;
-                border-bottom: 1px solid #f5f5f5;
-                margin-bottom: 0.5rem;
-            }
-
-            .menu-logo {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-            }
-
-            .menu-logo .logo-icon {
-                width: 32px;
-                height: 32px;
-                background: linear-gradient(135deg, #6c5ce7, #a29bfe);
-                border-radius: 8px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: white;
-                font-weight: bold;
-                font-size: 0.9rem;
-            }
-
-            .menu-logo span {
-                color: #6c5ce7;
-                font-weight: 700;
-                font-size: 1.1rem;
-            }
-
-            .menu-close {
-                background: none;
-                border: none;
-                font-size: 1.3rem;
-                color: #888;
-                cursor: pointer;
-                padding: 5px;
-                line-height: 1;
-            }
-
-            /* 菜单项 */
-            .nav-links li a {
-                display: flex;
-                align-items: center;
-                gap: 14px;
-                padding: 0.9rem 1.5rem;
-                transition: all 0.25s ease;
-                color: #555;
-                font-size: 0.95rem;
-            }
-
-            .nav-links li a:hover {
-                background: #f8f7ff;
-                color: #6c5ce7;
-            }
-
-            .nav-links li a:active {
-                background: linear-gradient(135deg, #6c5ce7, #7c6cf0);
-                color: white;
-                margin: 0 0.8rem;
-                border-radius: 10px;
-            }
-
-            .menu-icon {
-                width: 22px;
-                height: 22px;
-                flex-shrink: 0;
-            }
-
-            /* 分组标题 */
-            .menu-divider {
-                padding: 0.8rem 1.5rem 0.4rem;
-                color: #aaa;
-                font-size: 0.8rem;
-                font-weight: 500;
-            }
-
-            .menu-divider span {
-                color: #aaa;
-            }
-
-            /* 遮罩层（透明，只用来点击关闭） */
-            .menu-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100vh;
-                background: transparent;
-                z-index: 1001;
-                opacity: 0;
-                visibility: hidden;
-                transition: all 0.3s ease;
-            }
-
-            .menu-overlay.active {
-                opacity: 1;
-                visibility: visible;
-            }
-
-            .mobile-menu-btn {
-                display: flex;
-            }
-
-            .hero h1 {
-                font-size: 1.8rem;
-            }
-
-            .hero-card {
-                padding: 2.5rem 1.5rem;
-            }
-
-            .about-content {
-                grid-template-columns: 1fr;
-            }
-
-            .projects-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .section {
-                padding: 60px 1.5rem;
-            }
-
-            .section-title h2 {
-                font-size: 1.8rem;
-            }
-        }
-    </style>
-    <style>[data-custom-element*="watermark"]{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>快乐大野鸡 - 神的作品集</title>
+<meta name="description" content="快乐大野鸡的个人作品集：三个真的在线上跑着的产品（MASKARIA、饭否外卖、喵叽智账）、七个其他项目、六门课程设计，以及会用的技术和联系方式。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' fill='%2317181A'/><text x='32' y='46' font-size='40' text-anchor='middle' fill='%23EFF0EC' font-family='sans-serif'>野</text></svg>">
+<script>document.documentElement.classList.add('js')</script>
+<link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
-    <!-- 浮动装饰背景 -->
-    <div class="floating-shapes">
-        <div class="shape shape-1"></div>
-        <div class="shape shape-2"></div>
-        <div class="shape shape-3"></div>
-        <div class="shape shape-4"></div>
-        <div class="shape shape-5"></div>
-    </div>
 
-    <!-- 菜单遮罩层 -->
-    <div class="menu-overlay" id="menu-overlay"></div>
+<div class="progress" aria-hidden="true"><span class="progress__in" id="progress"></span></div>
 
-    <!-- 导航栏 -->
-    <nav id="main-nav">
-        <div class="nav-container">
-            <div class="logo">
-                <div class="logo-icon">P</div>
-                <span>我的项目集</span>
-            </div>
-            <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="菜单">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                    <line x1="3" y1="6" x2="21" y2="6"></line>
-                    <line x1="3" y1="12" x2="21" y2="12"></line>
-                    <line x1="3" y1="18" x2="21" y2="18"></line>
-                </svg>
-            </button>
-        </div>
+<a class="skip" href="#work">跳到作品</a>
+
+<header class="band--paper">
+  <div class="wrap top">
+    <a class="top__mark" href="#top">快乐大野鸡</a>
+    <nav class="top__nav" aria-label="分节导航">
+        <a href="#work">产品</a>
+        <a href="#small">其他项目</a>
+        <a href="#base">底子</a>
+        <a href="#about">关于</a>
+        <a href="#contact">联系</a>
     </nav>
+    <button class="menu-btn" type="button" id="menu" aria-expanded="false" aria-controls="sheet">菜单</button>
+  </div>
+</header>
 
-    <!-- 菜单遮罩层 -->
-    <div class="menu-overlay" id="menu-overlay"></div>
+<div class="sheet" id="sheet" hidden>
+    <button class="sheet__close" type="button" id="sheetClose">关闭</button>
+    <nav aria-label="分节导航">
+        <a href="#work">产品</a>
+        <a href="#small">其他项目</a>
+        <a href="#base">底子</a>
+        <a href="#about">关于</a>
+        <a href="#contact">联系</a>
+    </nav>
+</div>
 
-    <!-- 侧边菜单（独立于nav，确保层级正确） -->
-    <ul class="nav-links" id="nav-links">
-        <li class="menu-header">
-            <div class="menu-logo">
-                <div class="logo-icon">P</div>
-                <span>我的项目集</span>
-            </div>
-            <button class="menu-close" onclick="closeMenu()">✕</button>
-        </li>
-        <li><a href="#home">
-            <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-            首页
-        </a></li>
-        <li><a href="#about">
-            <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            关于神
-        </a></li>
-        <li class="menu-divider"><span>学习</span></li>
-        <li><a href="#skills">
-            <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-            技能栈
-        </a></li>
-        <li><a href="#projects">
-            <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-            项目
-        </a></li>
-        <li><a href="#courses">
-            <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-            课程设计
-        </a></li>
-        <li class="menu-divider"><span>联系</span></li>
-        <li><a href="#contact">
-            <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-            联系我
-        </a></li>
-    </ul>
+<main id="top">
 
-    <main id="main-content">
-        <!-- Hero 区域 -->
-        <section class="hero section" id="home">
-            <div class="hero-card">
-                <div class="hero-avatar">👨‍💻</div>
-                <h1>欢迎来到快乐大野鸡的项目集</h1>
-                <p class="subtitle">或许是不知梦的缘故，流离之人追逐幻影</p>
-                <p>你好，我是快乐大野鸡，一个普通到连运气都要绕路走的计算机专业学生。别人写项目靠实力，我靠 deadline 当晚的求生欲，和一点点不肯死心。下面这些，是我一边怀疑人生一边敲出来的——能跑的叫作品，跑不动的叫青春。反正你都点进来了，随便看看呗，你多停留一秒，我就当今天被这个世界温柔对待过。</p>
-                <div class="hero-buttons">
-                    <a href="#projects" class="btn btn-primary">查看项目</a>
-                    <a href="#contact" class="btn btn-outline">联系我</a>
+    <section class="hero band--paper">
+        <div class="wrap hero__inner">
+            <div class="hero__left">
+                <h1 class="hero__name">
+                    <span class="line"><span>快乐</span></span>
+                    <span class="line"><span>大野鸡</span></span>
+                </h1>
+                <p class="hero__say" data-rise style="--i:0">计算机专业在读，手艺一般。这些东西都是我自己写的，<span class="marker">现在全都还开着</span>。</p>
+                <div class="hero__foot">
+                    <a class="btn" href="#work" id="pick" data-rise style="--i:1">让野鸡挑一个</a>
                 </div>
             </div>
-        </section>
-
-        <!-- 关于我 -->
-        <section class="section" id="about">
-            <div class="section-title fade-in">
-                <h2>关于神</h2>
-                <div class="divider"></div>
-                <p>一键了解神的来时路</p>
-            </div>
-            <div class="about-content">
-                <div class="about-card fade-in">
-                    <h3>👋 个人简介</h3>
-                    <p>二十二岁，计算机专业在读，人生熟练度大概百分之十二。</p>
-                    <p style="margin-top: 1rem;">没什么拿得出手的技能，唯一满级的是“在尴尬场合保持微笑”，被动技能是“越努力越倒霉”，大招是“深夜emo但白天照常上课”。</p>
-                    <p style="margin-top: 1rem;">白天写代码，晚上写bug，偶尔抬头看看天，觉得自己大概是这个世界的NPC——没有剧情线，没有好感度选项，路过的主角跟我对完话就走了，连个支线任务都不给我。</p>
-                    <p style="margin-top: 1rem;">但我还是每天准时上线，毕竟NPC也得有NPC的职业素养。</p>
-                    <p style="margin-top: 1rem;">最大的梦想是不劳而获，目前进度：零。</p>
-                    <p style="margin-top: 1rem;">反正又不会死，对吧。</p>
-                </div>
-                <div class="about-card fade-in">
-                    <h3>📋 基本信息</h3>
-                    <ul class="info-list">
-                        <li>
-                            <span class="label">专业</span>
-                            <span class="value">计算机科学与技术</span>
-                        </li>
-                        <li>
-                            <span class="label">方向</span>
-                            <span class="value">软件开发 / 全栈</span>
-                        </li>
-                        <li>
-                            <span class="label">学历</span>
-                            <span class="value">本科在读</span>
-                        </li>
-                        <li>
-                            <span class="label">兴趣</span>
-                            <span class="value">编程、开源、技术分享</span>
-                        </li>
-                        <li>
-                            <span class="label">状态</span>
-                            <span class="value" style="color: #f1c40f; font-weight: 700;">牛马态</span>
-                        </li>
+            <div class="hero__board block" data-rise style="--i:2">
+                <div class="block__in">
+                    <ul class="hero__list">
+                        <li><span class="tick" aria-hidden="true"></span><span><b>三个产品</b>：真的在线上跑着</span></li>
+                        <li><span class="tick" aria-hidden="true"></span><span><b>七个其他项目</b>：都还点得开</span></li>
+                        <li><span class="tick" aria-hidden="true"></span><span><b>六门课程设计</b>：课上讲什么就做什么</span></li>
+                        <li><span class="tick" aria-hidden="true"></span><span><b>三十一个技术标签</b>：会用的都写上</span></li>
                     </ul>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- 技能 -->
-        <section class="section" id="skills">
-            <div class="section-title fade-in">
-                <h2>技能栈</h2>
-                <div class="divider"></div>
-                <p>掌握的编程语言和技术工具</p>
-            </div>
-            <div class="skills-grid">
-                <div class="skill-category fade-in">
-                    <h4>🖥️ 编程语言</h4>
-                    <div class="skill-tags">
-                        <span class="skill-tag">C/C++</span>
-                        <span class="skill-tag">Java</span>
-                        <span class="skill-tag">Python</span>
-                        <span class="skill-tag">JavaScript</span>
-                        <span class="skill-tag">SQL</span>
-                    </div>
-                </div>
-                <div class="skill-category fade-in">
-                    <h4>🌐 前端开发</h4>
-                    <div class="skill-tags">
-                        <span class="skill-tag">HTML/CSS</span>
-                        <span class="skill-tag">Vue.js</span>
-                        <span class="skill-tag">React</span>
-                        <span class="skill-tag">Tailwind</span>
-                    </div>
-                </div>
-                <div class="skill-category fade-in">
-                    <h4>⚙️ 后端开发</h4>
-                    <div class="skill-tags">
-                        <span class="skill-tag">Node.js</span>
-                        <span class="skill-tag">Spring Boot</span>
-                        <span class="skill-tag">Flask</span>
-                        <span class="skill-tag">MySQL</span>
-                    </div>
-                </div>
-                <div class="skill-category fade-in">
-                    <h4>🤖 AI 与大模型</h4>
-                    <div class="skill-tags">
-                        <span class="skill-tag">大语言模型 LLM 应用</span>
-                        <span class="skill-tag">AI API 接入</span>
-                        <span class="skill-tag">Prompt 工程</span>
-                        <span class="skill-tag">AI Agent 基础</span>
-                    </div>
-                </div>
-                <div class="skill-category fade-in">
-                    <h4>🧭 产品能力</h4>
-                    <div class="skill-tags">
-                        <span class="skill-tag">PRD 需求文档</span>
-                        <span class="skill-tag">需求分析 / 需求池</span>
-                        <span class="skill-tag">原型 Figma / Axure / 墨刀</span>
-                        <span class="skill-tag">流程图 ProcessOn</span>
-                        <span class="skill-tag">用户调研 / 用户画像</span>
-                        <span class="skill-tag">竞品分析</span>
-                        <span class="skill-tag">数据指标 / A/B 测试</span>
-                        <span class="skill-tag">产品路线图规划</span>
-                        <span class="skill-tag">项目管理 Jira / 禅道</span>
-                    </div>
-                </div>
-                <div class="skill-category fade-in">
-                    <h4>🛠️ 工具与其他</h4>
-                    <div class="skill-tags">
-                        <span class="skill-tag">Git</span>
-                        <span class="skill-tag">GitHub</span>
-                        <span class="skill-tag">Linux</span>
-                        <span class="skill-tag">Docker</span>
-                        <span class="skill-tag">VS Code</span>
-                    </div>
-                </div>
-            </div>
-        </section>
+    <div class="ticker" aria-hidden="true">
+        <div class="ticker__track">
+            <span>MASKARIA</span><span class="ticker__sep"></span>
+            <span>饭否外卖</span><span class="ticker__sep"></span>
+            <span>喵叽智账</span><span class="ticker__sep"></span>
+            <span>简易电商平台</span><span class="ticker__sep"></span>
+            <span>数据可视化看板</span><span class="ticker__sep"></span>
+            <span>在线笔记应用</span><span class="ticker__sep"></span>
+            <span>智能聊天机器人</span><span class="ticker__sep"></span>
+            <span>待办事项清单</span><span class="ticker__sep"></span>
+            <span>栗子救援队</span><span class="ticker__sep"></span>
+            <span>贪吃蛇游戏</span><span class="ticker__sep"></span>
+            <span>MASKARIA</span><span class="ticker__sep"></span>
+            <span>饭否外卖</span><span class="ticker__sep"></span>
+            <span>喵叽智账</span><span class="ticker__sep"></span>
+            <span>简易电商平台</span><span class="ticker__sep"></span>
+            <span>数据可视化看板</span><span class="ticker__sep"></span>
+            <span>在线笔记应用</span><span class="ticker__sep"></span>
+            <span>智能聊天机器人</span><span class="ticker__sep"></span>
+            <span>待办事项清单</span><span class="ticker__sep"></span>
+            <span>栗子救援队</span><span class="ticker__sep"></span>
+            <span>贪吃蛇游戏</span><span class="ticker__sep"></span>
+        </div>
+    </div>
 
-        <!-- 项目展示 -->
-        <section class="section" id="projects">
-            <div class="section-title fade-in">
-                <h2>个人项目</h2>
-                <div class="divider"></div>
-                <p>我独立完成的编程项目</p>
+    <section class="products band--paper" id="work">
+        <div class="stick" id="stick">
+            <div class="wrap stick__inner">
+                <ul class="stick__list">
+                    <li><a href="#p-maskaria" data-stick="p-maskaria">MASKARIA</a></li>
+                    <li><a href="#p-fanfou" data-stick="p-fanfou">饭否外卖</a></li>
+                    <li><a href="#p-miaoji" data-stick="p-miaoji">喵叽智账</a></li>
+                </ul>
+                <p class="stick__count">三个都真的在线上跑着</p>
             </div>
-            <div class="projects-grid">
-                <div class="project-card fade-in">
-                    <div class="project-image">📝</div>
-                    <div class="project-body">
-                        <span class="project-tag">Web 应用</span>
-                        <h3>在线笔记应用</h3>
-                        <p>一个支持 Markdown 编辑的在线笔记工具，支持分类管理、标签系统和云端同步，界面简洁美观。</p>
-                        <div class="project-tech">
-                            <span class="tech-tag">Vue.js</span>
-                            <span class="tech-tag">Node.js</span>
-                            <span class="tech-tag">MongoDB</span>
-                        </div>
-                        <div class="project-links">
-                            <a href="https://jjbj.pages.dev/" target="_blank">查看详情 →</a>
-                            <a href="https://github.com/Meinan818/my-website/tree/main/notes" target="_blank">GitHub →</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="project-card fade-in">
-                    <div class="project-image">🤖</div>
-                    <div class="project-body">
-                        <span class="project-tag">AI 项目</span>
-                        <h3>智能聊天机器人</h3>
-                        <p>基于 Python 和大语言模型 API 开发的智能对话机器人，支持多轮对话和上下文理解。</p>
-                        <div class="project-tech">
-                            <span class="tech-tag">Python</span>
-                            <span class="tech-tag">Flask</span>
-                            <span class="tech-tag">AI API</span>
-                        </div>
-                        <div class="project-links">
-                            <a href="https://ai-cdr.pages.dev/" target="_blank">查看详情 →</a>
-                            <a href="https://github.com/Meinan818/my-website/tree/main/chatbot" target="_blank">GitHub →</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="project-card fade-in">
-                    <div class="project-image">🛒</div>
-                    <div class="project-body">
-                        <span class="project-tag">电商系统</span>
-                        <h3>简易电商平台</h3>
-                        <p>完整的前后端分离电商系统，包含商品展示、购物车、订单管理和用户登录功能。</p>
-                        <div class="project-tech">
-                            <span class="tech-tag">React</span>
-                            <span class="tech-tag">Spring Boot</span>
-                            <span class="tech-tag">MySQL</span>
-                        </div>
-                        <div class="project-links">
-                            <a href="https://dianshang-1uv.pages.dev/" target="_blank">查看详情 →</a>
-                            <a href="https://github.com/Meinan818/my-website/tree/main/ecommerce" target="_blank">GitHub →</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="project-card fade-in">
-                    <div class="project-image">📊</div>
-                    <div class="project-body">
-                        <span class="project-tag">数据分析</span>
-                        <h3>数据可视化看板</h3>
-                        <p>基于 ECharts 的数据可视化大屏，支持实时数据更新和多种图表类型展示。</p>
-                        <div class="project-tech">
-                            <span class="tech-tag">Python</span>
-                            <span class="tech-tag">ECharts</span>
-                            <span class="tech-tag">FastAPI</span>
-                        </div>
-                        <div class="project-links">
-                            <a href="https://sjkb.pages.dev/" target="_blank">查看详情 →</a>
-                            <a href="https://github.com/Meinan818/my-website/tree/main/dashboard" target="_blank">GitHub →</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="project-card fade-in">
-                    <div class="project-image">🎮</div>
-                    <div class="project-body">
-                        <span class="project-tag">小游戏</span>
-                        <h3>贪吃蛇游戏</h3>
-                        <p>经典贪吃蛇游戏的网页版实现，支持键盘操作、计分系统和难度选择。</p>
-                        <div class="project-tech">
-                            <span class="tech-tag">JavaScript</span>
-                            <span class="tech-tag">Canvas</span>
-                            <span class="tech-tag">CSS3</span>
-                        </div>
-                        <div class="project-links">
-                            <a href="https://lqx666.pages.dev/" target="_blank">查看详情 →</a>
-                            <a href="https://github.com/Meinan818/my-website/tree/main/snake" target="_blank">GitHub →</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="project-card fade-in">
-                    <div class="project-image">📱</div>
-                    <div class="project-body">
-                        <span class="project-tag">工具应用</span>
-                        <h3>待办事项清单</h3>
-                        <p>简洁高效的待办事项管理工具，支持任务分类、优先级标记和本地存储。</p>
-                        <div class="project-tech">
-                            <span class="tech-tag">HTML/CSS</span>
-                            <span class="tech-tag">JavaScript</span>
-                            <span class="tech-tag">LocalStorage</span>
-                        </div>
-                        <div class="project-links">
-                            <a href="https://dbqd.pages.dev/" target="_blank">查看详情 →</a>
-                            <a href="https://github.com/Meinan818/my-website/tree/main/todo" target="_blank">GitHub →</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="project-card fade-in">
-                    <div class="project-image">🌰</div>
-                    <div class="project-body">
-                        <span class="project-tag">小游戏</span>
-                        <h3>栗子救援队</h3>
-                        <p>Canvas 平台跳跃闯关游戏，操控松鼠收集栗子、搬箱解谜，旗帜可保存重生点，含多关卡与 BOSS 战，支持键盘/触屏操作和本地双人，进度自动保存。</p>
-                        <div class="project-tech">
-                            <span class="tech-tag">HTML5 Canvas</span>
-                            <span class="tech-tag">JavaScript</span>
-                            <span class="tech-tag">LocalStorage</span>
-                        </div>
-                        <div class="project-links">
-                            <a href="https://lizi-eg0.pages.dev/" target="_blank">查看详情 →</a>
-                            <a href="https://github.com/Meinan818/my-website/tree/main/lizi" target="_blank">GitHub →</a>
-                        </div>
-                    </div>
-                </div>
+        </div>
+        <div class="wrap">
+            <div class="shead">
+                <h2 class="mask"><span class="line"><span>三个产品</span></span></h2>
+                <p class="shead__note" data-rise style="--i:1">三个都真的部署在服务器上，下面的截图就是在那上面截的。第一个我自己每天开，第三个朋友在用，第二个从一份课程作业长成了完整的三端系统。</p>
             </div>
-        </section>
+        </div>
 
-        <!-- 课程设计 -->
-        <section class="section" id="courses">
-            <div class="section-title fade-in">
-                <h2>课程设计</h2>
-                <div class="divider"></div>
-                <p>在校期间完成的课程设计作业</p>
-            </div>
-            <div class="courses-grid">
-                <div class="course-card fade-in">
-                    <h4>操作系统课程设计</h4>
-                    <div class="course-name">OS Course Design</div>
-                    <p>模拟进程调度算法，实现先来先服务、短作业优先、时间片轮转等多种调度算法的可视化演示。</p>
-                </div>
-                <div class="course-card fade-in">
-                    <h4>数据库课程设计</h4>
-                    <div class="course-name">Database Course Design</div>
-                    <p>图书馆管理系统，包含图书借阅、读者管理、库存查询等模块，使用 MySQL 数据库存储数据。</p>
-                </div>
-                <div class="course-card fade-in">
-                    <h4>数据结构课程设计</h4>
-                    <div class="course-name">Data Structures</div>
-                    <p>校园导航系统，使用图论算法实现最短路径规划，支持多个校区间的路线查询。</p>
-                </div>
-                <div class="course-card fade-in">
-                    <h4>计算机网络课程设计</h4>
-                    <div class="course-name">Computer Networks</div>
-                    <p>简易聊天室程序，基于 TCP/IP 协议实现多人在线聊天，支持私聊和群聊功能。</p>
-                </div>
-                <div class="course-card fade-in">
-                    <h4>软件工程课程设计</h4>
-                    <div class="course-name">Software Engineering</div>
-                    <p>学生信息管理系统，按照软件工程规范完成需求分析、设计、编码和测试全流程。</p>
-                </div>
-                <div class="course-card fade-in">
-                    <h4>编译原理课程设计</h4>
-                    <div class="course-name">Compiler Principles</div>
-                    <p>简单语法分析器，实现词法分析和语法分析功能，能够解析简单的编程语言代码。</p>
+        <article class="wrap plate" id="p-maskaria" data-pick>
+            <div class="plate__copy block block--yellow">
+                <div class="block__in">
+                <h3 class="plate__name" data-rise style="--i:0"><a class="link" href="projects/maskaria.html">MASKARIA</a></h3>
+                <p class="plate__say" data-rise style="--i:1">把每天干的事记下来，换成属性点，长成一张属于你的人格面具。</p>
+                <dl class="plate__facts" data-rise style="--i:2">
+                    <div><dt>技术</dt><dd>React 18 · TypeScript · Java Spring Boot · MySQL，同一套代码打包成安卓应用</dd></div>
+                    <div><dt>数字</dt><dd>361 项自动化测试通过（前端 202、后端 159），数据库版本迁移 13 个</dd></div>
+                    <div><dt>主题</dt><dd>四套视觉语言，连按钮的说法都跟着换；红色世界里，完成叫「夺回」</dd></div>
+                    <div><dt>地址</dt><dd>域名还没弄好，先留个位置（想要地址可以写信问我）</dd></div>
+                </dl>
+                <p class="plate__note" data-rise style="--i:3">网页版和安卓包都能跑。界面与命名致敬《女神异闻录》，是粉丝向的个人作品，不商用；代码按 GPL-3.0 开源。</p>
+                <p class="plate__acts" data-rise style="--i:4">
+                    <a class="btn" href="projects/maskaria.html">查看详情</a>
+                </p>
                 </div>
             </div>
-        </section>
+            <figure class="plate__shot" data-rise style="--i:2">
+                <span class="shot shot--a">
+                    <img src="assets/phone-maskaria.jpg" width="720" height="1567" fetchpriority="high" decoding="async"
+                         alt="MASKARIA 首页（红色主题）：深色舞台上贴着剪报风的任务卡和星象牌，顶部是 MASKARIA 拼贴标题，右上角是日期，中间写着“今日任务”与“今日星象尚未展开”">
+                </span>
+                <span class="shot shot--b">
+                    <img src="assets/phone-maskaria-2.jpg" width="520" height="1132" loading="lazy" decoding="async"
+                         alt="MASKARIA 的助手（红色主题）：和叫「黑猫」的角色对话，说一句“我今天午饭吃了10块钱”，下面就生成一张记账卡等人确认">
+                </span>
+            </figure>
+        </article>
 
-        <!-- 联系我 -->
-        <section class="section" id="contact">
-            <div class="section-title fade-in">
-                <h2>联系我</h2>
-                <div class="divider"></div>
-                <p>欢迎交流与合作</p>
+        <article class="wrap plate" id="p-fanfou" data-pick>
+            <div class="plate__copy block block--pink">
+                <div class="block__in">
+                <h3 class="plate__name" data-rise style="--i:0"><a class="link" href="projects/fanfou.html">饭否外卖</a></h3>
+                <p class="plate__say" data-rise style="--i:1">顾客下单、商家出餐、骑手配送，三端联动，走同一条订单流水线。</p>
+                <dl class="plate__facts" data-rise style="--i:2">
+                    <div><dt>技术</dt><dd>React 19 · TypeScript · Tailwind，Supabase（PostgreSQL + 实时推送）</dd></div>
+                    <div><dt>数字</dt><dd>9 种订单状态；25 张表、57 条行级权限策略</dd></div>
+                    <div><dt>钱</dt><dd>扣款、流水、订单状态在一个数据库事务里一次完成，双击也不会重复扣</dd></div>
+                    <div><dt>地址</dt><dd>jianwei-57i.pages.dev（手机竖屏打开最好看）</dd></div>
+                </dl>
+                <p class="plate__note" data-rise style="--i:3">演示账号 13800000001（顾客）/ 13800000002（商家）/ 13800000003（骑手），密码都是 123456。支付和短信是演示实现，不会真的扣钱。</p>
+                <p class="plate__acts" data-rise style="--i:4">
+                    <a class="btn" href="projects/fanfou.html">查看详情</a>
+                </p>
+                </div>
             </div>
-            <div class="contact-card fade-in">
-                <h3 style="color: #333; margin-bottom: 1rem;">被我的帅气迷晕了吧。</h3>
-                <p style="color: #666;">如果被我迷晕了，以下是给我递情书的途径</p>
-                <div class="contact-methods">
-                    <div class="contact-item" onclick="copyText('13643270611@163.com','邮箱')">
-                        <div class="icon">📧</div>
-                        <div class="label">邮箱（点击复制）</div>
-                        <div class="value">13643270611@163.com</div>
+            <figure class="plate__shot" data-rise style="--i:2">
+                <span class="shot shot--a">
+                    <img src="assets/phone-fanfou.jpg" width="720" height="1561" loading="lazy" decoding="async"
+                         alt="饭否外卖顾客端首页：顶部是收货地址与搜索框，中间一排分类图标和一张菜品横幅，下面是“为你推荐”的三张菜品卡，底部四个导航（首页、订单、消息、我的）">
+                </span>
+                <span class="shot shot--b">
+                    <img src="assets/phone-fanfou-2.jpg" width="520" height="1127" loading="lazy" decoding="async"
+                         alt="饭否外卖的启动页：顾客、商家、骑手三张身份卡各占一行，进去之后是三套互不相通的界面">
+                </span>
+            </figure>
+        </article>
+
+        <article class="wrap plate" id="p-miaoji" data-pick>
+            <div class="plate__copy block block--blue">
+                <div class="block__in">
+                <h3 class="plate__name" data-rise style="--i:0"><a class="link" href="projects/miaoji.html">喵叽智账</a></h3>
+                <p class="plate__say" data-rise style="--i:1">用说话记账：你说「午饭 25，咖啡 18」，它整理成草稿，你确认了才真的入账。</p>
+                <dl class="plate__facts" data-rise style="--i:2">
+                    <div><dt>技术</dt><dd>Vue 3 · Java 21 Spring Boot · MySQL，接智谱 GLM-4-Flash 整理草稿</dd></div>
+                    <div><dt>数字</dt><dd>668 项测试通过（前端 574、后端 94），两种构建都过</dd></div>
+                    <div><dt>账本</dt><dd>随时能导出，导入只新增不覆盖，不会把你的旧账冲掉</dd></div>
+                    <div><dt>地址</dt><dd>域名还没弄好，现在挂在一台服务器上（纯 IP、没有 HTTPS）</dd></div>
+                </dl>
+                <p class="plate__note" data-rise style="--i:3">注册要邮箱验证码，而验证码发到我的邮箱，所以想用得先跟我说一声。没有 HTTPS，「装到手机主屏」和离线用不了，别的都正常。</p>
+                <p class="plate__acts" data-rise style="--i:4">
+                    <a class="btn" href="projects/miaoji.html">查看详情</a>
+                </p>
+                </div>
+            </div>
+            <figure class="plate__shot" data-rise style="--i:2">
+                <span class="shot shot--a">
+                    <img src="assets/phone-miaoji.jpg" width="720" height="1558" loading="lazy" decoding="async"
+                         alt="喵叽智账聊天记账页：奶油粉的纸面，中间是猫的插画和“小开销，也值得好好记下”，下面三格写着说开销、核对草稿、确认记下，底部输入框里写着“午饭25，咖啡18…”">
+                </span>
+                <span class="shot shot--b">
+                    <img src="assets/phone-miaoji-2.jpg" width="520" height="1125" loading="lazy" decoding="async"
+                         alt="喵叽智账的统计页：本月支出的环形图，外圈按分类分色，下面按金额从高到低列出购物、餐饮、住房各项的金额与占比">
+                </span>
+            </figure>
+        </article>
+    </section>
+
+    <section class="small band--paper" id="small">
+        <div class="wrap">
+            <div class="shead">
+                <h2 class="mask"><span class="line"><span>其他项目</span></span></h2>
+                <p class="shead__note" data-rise style="--i:1">课程作业和周末折腾出来的，每一个现在都还能点开。做得不精，但都是我一行一行写的；点名字有更啰嗦的说明，点地址直接进去。</p>
+            </div>
+
+            <ol class="rows">
+                <li class="row" data-pick>
+                    <span class="row__thumb"><img src="assets/thumbs/ecommerce.jpg" width="600" height="450" loading="lazy" decoding="async" alt="简易电商平台的登录页：左边黑底写着 LESS, BUT BETTER.，右边是登录账户表单"></span>
+                    <h3 class="row__name"><a class="link" href="projects/ecommerce.html">简易电商平台</a></h3>
+                    <p class="row__tech">React + Spring Boot + MySQL · 商品、购物车、下单、登录，前后端分离</p>
+                    <a class="row__live" href="https://dianshang-1uv.pages.dev/" target="_blank" rel="noopener">dianshang-1uv.pages.dev</a>
+                </li>
+                <li class="row" data-pick>
+                    <span class="row__thumb"><img src="assets/thumbs/dashboard.jpg" width="600" height="450" loading="lazy" decoding="async" alt="数据可视化看板的深色大屏：顶部四个指标卡，下面是营收趋势折线图、流量渠道环形图、品类销量柱状图和地区排行"></span>
+                    <h3 class="row__name"><a class="link" href="projects/dashboard.html">数据可视化看板</a></h3>
+                    <p class="row__tech">Python + ECharts + FastAPI · 指标卡、趋势折线、环形图、地区排行</p>
+                    <a class="row__live" href="https://sjkb.pages.dev/" target="_blank" rel="noopener">sjkb.pages.dev</a>
+                </li>
+                <li class="row" data-pick>
+                    <span class="row__thumb"><img src="assets/thumbs/notes.jpg" width="600" height="450" loading="lazy" decoding="async" alt="在线笔记应用的登录页：青绿色背景上一张白色卡片，写着登录和注册，下面是邮箱和密码输入框"></span>
+                    <h3 class="row__name"><a class="link" href="projects/notes.html">在线笔记应用</a></h3>
+                    <p class="row__tech">Vue + Node.js + MongoDB · Markdown 编辑、分类标签、登录后云端同步</p>
+                    <a class="row__live" href="https://jjbj.pages.dev/" target="_blank" rel="noopener">jjbj.pages.dev</a>
+                </li>
+                <li class="row" data-pick>
+                    <span class="row__thumb"><img src="assets/thumbs/chatbot.jpg" width="600" height="450" loading="lazy" decoding="async" alt="智能聊天机器人界面：中间写着“有什么可以帮你？”，下面一排示例提问，底部是消息输入框"></span>
+                    <h3 class="row__name"><a class="link" href="projects/chatbot.html">智能聊天机器人</a></h3>
+                    <p class="row__tech">Python + Flask + 大模型 API · 多轮对话，能记住上面聊过什么</p>
+                    <a class="row__live" href="https://ai-cdr.pages.dev/" target="_blank" rel="noopener">ai-cdr.pages.dev</a>
+                </li>
+                <li class="row" data-pick>
+                    <span class="row__thumb"><img src="assets/thumbs/todo.jpg" width="600" height="450" loading="lazy" decoding="async" alt="待办清单看板：顶部是日期和“今日待办看板”，下面一排待办、进行中、已完成三列任务卡片"></span>
+                    <h3 class="row__name"><a class="link" href="projects/todo.html">待办事项清单</a></h3>
+                    <p class="row__tech">HTML/CSS + JavaScript · 三列看板、优先级、拖动排序，数据存在本地</p>
+                    <a class="row__live" href="https://dbqd.pages.dev/" target="_blank" rel="noopener">dbqd.pages.dev</a>
+                </li>
+                <li class="row" data-pick>
+                    <span class="row__thumb"><img src="assets/thumbs/lizi.jpg" width="600" height="450" loading="lazy" decoding="async" alt="栗子救援队首页：浅绿色的林间关卡插画，中间是开始面板，写着单人冒险和双人合作"></span>
+                    <h3 class="row__name"><a class="link" href="projects/lizi.html">栗子救援队</a></h3>
+                    <p class="row__tech">Canvas + JavaScript · 八个关卡、搬箱子解谜、旗帜存点、同屏双人</p>
+                    <a class="row__live" href="https://lizi-eg0.pages.dev/" target="_blank" rel="noopener">lizi-eg0.pages.dev</a>
+                </li>
+                <li class="row" data-pick>
+                    <span class="row__thumb"><img src="assets/thumbs/snake.jpg" width="600" height="450" loading="lazy" decoding="async" alt="贪吃蛇游戏界面：黑底绿字的复古街机风格，上面是 SNAKE 标题和分数面板，中间是游戏区"></span>
+                    <h3 class="row__name"><a class="link" href="projects/snake.html">贪吃蛇游戏</a></h3>
+                    <p class="row__tech">Canvas + JavaScript · 键盘操作、计分、难度可选，声音能关</p>
+                    <a class="row__live" href="https://lqx666.pages.dev/" target="_blank" rel="noopener">lqx666.pages.dev</a>
+                </li>
+            </ol>
+        </div>
+    </section>
+
+    <section class="base band--green" id="base">
+        <div class="wrap">
+            <div class="base__grid">
+                <div class="base__col base__col--courses block">
+                    <div class="block__in">
+                    <h2 class="mask" data-rise style="--i:0"><span class="line"><span>课程设计</span></span></h2>
+                    <p class="base__note" data-rise style="--i:1">题目就是课上讲的东西，交上去那天都跑通了。</p>
+                    <ol class="courses">
+                        <li data-rise style="--i:0"><h3>操作系统</h3><p>模拟进程调度：先来先服务、短作业优先、时间片轮转</p></li>
+                        <li data-rise style="--i:1"><h3>数据库</h3><p>图书馆管理系统：借阅、读者管理、库存查询</p></li>
+                        <li data-rise style="--i:2"><h3>数据结构</h3><p>校园导航：用图算最短路径，多校区路线都能查</p></li>
+                        <li data-rise style="--i:3"><h3>计算机网络</h3><p>基于 TCP/IP 的多人在线聊天室，私聊和群聊都做了</p></li>
+                        <li data-rise style="--i:0"><h3>软件工程</h3><p>学生信息管理系统：需求、设计、编码、测试走完一遍</p></li>
+                        <li data-rise style="--i:1"><h3>编译原理</h3><p>一个简单的语法分析器，能解析一小门语言</p></li>
+                    </ol>
                     </div>
-                    <div class="contact-item" onclick="window.open('https://github.com/Meinan818','_blank')">
-                        <div class="icon">🐱</div>
-                        <div class="label">GitHub</div>
-                        <div class="value">@Meinan818</div>
-                    </div>
-                    <div class="contact-item" onclick="copyText('lllqx0611','微信号')">
-                        <div class="icon">💬</div>
-                        <div class="label">微信（点击复制）</div>
-                        <div class="value">lllqx0611</div>
+                </div>
+                <div class="base__col base__col--skills block">
+                    <div class="block__in">
+                    <h2 class="mask" data-rise style="--i:0"><span class="line"><span>会用的东西</span></span></h2>
+                    <p class="base__note" data-rise style="--i:1">按用的地方分成六组，一共三十一个标签。会用和用得好是两回事，这里说的是会用。</p>
+                    <ul class="skills">
+                        <li data-rise style="--i:0"><h3>语言</h3><p>C/C++、Java、Python、JavaScript、SQL</p></li>
+                        <li data-rise style="--i:1"><h3>前端</h3><p>HTML/CSS、Vue.js、React、Tailwind</p></li>
+                        <li data-rise style="--i:2"><h3>后端与数据</h3><p>Node.js、Spring Boot、Flask、MySQL</p></li>
+                        <li data-rise style="--i:3"><h3>AI 与大模型</h3><p>LLM 应用、AI API 接入、Prompt 工程、AI Agent 基础</p></li>
+                        <li data-rise style="--i:0"><h3>产品</h3><p>PRD 需求文档、需求分析、用户调研与用户画像、竞品分析、原型 Figma / Axure / 墨刀、流程图 ProcessOn、数据指标与 A/B 测试、产品路线图规划、项目管理 Jira / 禅道</p></li>
+                        <li data-rise style="--i:1"><h3>工具</h3><p>Git、GitHub、Linux、Docker、VS Code</p></li>
+                    </ul>
                     </div>
                 </div>
             </div>
-        </section>
-    </main>
+            <p class="base__count" data-rise style="--i:0">三个产品，七个其他项目，六门课程设计，三十一个技术标签，都在这一页上。</p>
+        </div>
+    </section>
 
-    <!-- 页脚 -->
-    <footer>
-        <p>我超威写的我好累啊</p>
-    </footer>
+    <section class="about band--paper" id="about">
+        <div class="wrap about__grid">
+            <dl class="facts" data-rise style="--i:0">
+                <dt>专业</dt><dd>计算机科学与技术</dd>
+                <dt>方向</dt><dd>软件开发 / 全栈</dd>
+                <dt>学历</dt><dd>本科在读</dd>
+                <dt>兴趣</dt><dd>编程、开源、技术分享</dd>
+                <dt>状态</dt><dd>牛马态</dd>
+            </dl>
+            <div class="about__words">
+                <h2 class="mask" data-rise style="--i:0"><span class="line"><span>关于</span></span></h2>
+                <p data-rise style="--i:1">二十二岁，计算机专业在读，人生熟练度大概百分之十二。</p>
+                <p data-rise style="--i:2">白天写代码，晚上写 bug，偶尔抬头看看天，觉得自己大概是这个世界的 NPC。</p>
+                <p data-rise style="--i:3">最大的梦想是不劳而获，目前进度：零。</p>
+                <p data-rise style="--i:1">但我还是每天准时上线，毕竟 NPC 也得有 NPC 的职业素养。</p>
+                <p data-rise style="--i:2">这些项目救不了世界，也救不了我的绩点，但它们都是能打开的。</p>
+            </div>
+        </div>
+        <div class="wrap">
+            <p class="about__state" data-rise style="--i:0">能跑的叫作品，<br>跑不动的叫青春。</p>
+        </div>
+    </section>
 
-    <!-- Toast 提示 -->
-    <div id="toast" style="
-        position: fixed;
-        bottom: 30px;
-        left: 50%;
-        transform: translateX(-50%) translateY(100px);
-        background: #6c5ce7;
-        color: white;
-        padding: 12px 24px;
-        border-radius: 12px;
-        box-shadow: 0 5px 20px rgba(108, 92, 231, 0.3);
-        transition: transform 0.3s ease;
-        z-index: 1000;
-        opacity: 0;
-    "></div>
+    <section class="contact band--yellow" id="contact">
+        <div class="wrap">
+            <a class="contact__mail" href="mailto:13643270611@163.com" data-rise style="--i:0">13643270611@163.com</a>
+            <p class="contact__say" data-rise style="--i:1">被我的帅气迷晕了吧。上面是邮箱，下面两个地方也能找到我。</p>
+            <div class="contact__meta" data-rise style="--i:2">
+                <button class="copy" type="button" data-copy="lllqx0611" data-label="微信号">微信 lllqx0611（点击复制）</button>
+                <a class="link" href="https://github.com/Meinan818" target="_blank" rel="noopener">GitHub @Meinan818</a>
+            </div>
+        </div>
+    </section>
 
-    <script>
-        // 移动端汉堡菜单（左侧滑出）
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const navLinks = document.getElementById('nav-links');
-        const menuOverlay = document.getElementById('menu-overlay');
+</main>
 
-        const hamburgerIcon = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>';
-        const closeIcon = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg>';
+<div class="ticker ticker--reverse" aria-hidden="true">
+    <div class="ticker__track">
+        <span>13643270611@163.com</span><span class="ticker__sep"></span>
+        <span>微信 lllqx0611</span><span class="ticker__sep"></span>
+        <span>github.com/Meinan818</span><span class="ticker__sep"></span>
+        <span>计算机科学与技术</span><span class="ticker__sep"></span>
+        <span>本科在读</span><span class="ticker__sep"></span>
+        <span>13643270611@163.com</span><span class="ticker__sep"></span>
+        <span>微信 lllqx0611</span><span class="ticker__sep"></span>
+        <span>github.com/Meinan818</span><span class="ticker__sep"></span>
+        <span>计算机科学与技术</span><span class="ticker__sep"></span>
+        <span>本科在读</span><span class="ticker__sep"></span>
+    </div>
+</div>
 
-        function openMenu() {
-            navLinks.classList.add('active');
-            menuOverlay.classList.add('active');
-            mobileMenuBtn.innerHTML = closeIcon;
-            document.body.style.overflow = 'hidden';
-        }
+<footer class="foot band--ink">
+    <div class="wrap">
+        <p class="foot__name">快乐大野鸡</p>
+        <div class="foot__grid">
+            <div class="foot__places">
+                <p>计算机科学与技术，本科在读</p>
+                <p><a class="link" href="mailto:13643270611@163.com">13643270611@163.com</a>　微信 lllqx0611</p>
+                <p><a class="link" href="https://github.com/Meinan818" target="_blank" rel="noopener">github.com/Meinan818</a></p>
+            </div>
+            <nav class="foot__nav" aria-label="分节导航">
+                <a class="link" href="#work">三个产品</a>
+                <a class="link" href="#small">其他项目</a>
+                <a class="link" href="#base">课程设计与技能</a>
+                <a class="link" href="#contact">联系</a>
+            </nav>
+            <p class="foot__legal">这一页上的东西现在还都开着。<br>我超威写的我好累啊。<br>© 快乐大野鸡</p>
+        </div>
+    </div>
+</footer>
 
-        function closeMenu() {
-            navLinks.classList.remove('active');
-            menuOverlay.classList.remove('active');
-            mobileMenuBtn.innerHTML = hamburgerIcon;
-            document.body.style.overflow = '';
-        }
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-        mobileMenuBtn.addEventListener('click', function() {
-            if (navLinks.classList.contains('active')) {
-                closeMenu();
-            } else {
-                openMenu();
-            }
-        });
+<script>
+    (function () {
+        'use strict';
 
-        // 点击遮罩层关闭菜单
-        menuOverlay.addEventListener('click', closeMenu);
+        var calm = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+        function prefersCalm() { return !!(calm && calm.matches); }
 
-        // 点击导航链接后关闭菜单并滚动
-        navLinks.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const targetId = this.getAttribute('href');
-                closeMenu();
-                setTimeout(() => {
-                    const target = document.querySelector(targetId);
-                    if (target) {
-                        const top = target.getBoundingClientRect().top + window.pageYOffset - 60;
-                        window.scrollTo({ top: top, behavior: 'smooth' });
+        /* ---------- 滚动进入 ---------- */
+        var revealTargets = Array.prototype.slice.call(document.querySelectorAll('[data-rise], .mask'));
+        if ('IntersectionObserver' in window && revealTargets.length) {
+            var io = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-in');
+                        io.unobserve(entry.target);
                     }
-                }, 300);
-            });
-        });
-
-        // Toast 提示函数
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.style.opacity = '1';
-            toast.style.transform = 'translateX(-50%) translateY(0)';
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateX(-50%) translateY(100px)';
-            }, 2000);
+                });
+            }, { rootMargin: '0px 0px 10% 0px', threshold: 0 });
+            revealTargets.forEach(function (el) { io.observe(el); });
+        } else {
+            revealTargets.forEach(function (el) { el.classList.add('is-in'); });
         }
 
-        // 点击复制（优先剪贴板 API，失败时用兜底方案）
-        function copyText(text, label) {
-            function done() { showToast((label || '内容') + '已复制：' + text); }
-            function fail() { showToast('复制失败，请手动长按选择：' + text); }
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy());
-            } else {
-                fallbackCopy();
+        /* ---------- 手机菜单 ---------- */
+        var menuBtn = document.getElementById('menu');
+        var sheet = document.getElementById('sheet');
+        var sheetClose = document.getElementById('sheetClose');
+
+        function sheetOpen() {
+            if (!sheet) return;
+            sheet.hidden = false;
+            if (menuBtn) menuBtn.setAttribute('aria-expanded', 'true');
+            var first = sheet.querySelector('a');
+            if (first) first.focus();
+        }
+        function sheetCloseNow(focusBack) {
+            if (!sheet) return;
+            sheet.hidden = true;
+            if (menuBtn) {
+                menuBtn.setAttribute('aria-expanded', 'false');
+                if (focusBack) menuBtn.focus();
             }
-            function fallbackCopy() {
-                const ta = document.createElement('textarea');
+        }
+        if (menuBtn && sheet) {
+            menuBtn.addEventListener('click', sheetOpen);
+            if (sheetClose) sheetClose.addEventListener('click', function () { sheetCloseNow(true); });
+            sheet.querySelectorAll('a').forEach(function (a) {
+                a.addEventListener('click', function () { sheetCloseNow(false); });
+            });
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && !sheet.hidden) sheetCloseNow(true);
+            });
+        }
+
+        /* ---------- 提示条与点击复制 ---------- */
+        var toast = document.getElementById('toast');
+        var toastTimer = null;
+        function showToast(msg) {
+            if (!toast) return;
+            toast.textContent = msg;
+            toast.classList.add('is-on');
+            window.clearTimeout(toastTimer);
+            toastTimer = window.setTimeout(function () { toast.classList.remove('is-on'); }, 3200);
+        }
+        function copyText(text, label) {
+            var done = function () { showToast((label || '内容') + '已复制：' + text); };
+            var fallback = function () {
+                var ta = document.createElement('textarea');
                 ta.value = text;
+                ta.setAttribute('readonly', 'readonly');
                 ta.style.position = 'fixed';
                 ta.style.opacity = '0';
                 document.body.appendChild(ta);
-                ta.focus();
                 ta.select();
-                try { document.execCommand('copy') ? done() : fail(); }
-                catch (e) { fail(); }
+                try {
+                    if (document.execCommand('copy')) { done(); }
+                    else { showToast('复制失败，请手动选择：' + text); }
+                } catch (e) {
+                    showToast('复制失败，请手动选择：' + text);
+                }
                 document.body.removeChild(ta);
-            }
-        }
-
-        // 滚动动画
-        const observerOptions = {
-            threshold: 0.05,
-            rootMargin: '0px 0px 0px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
-            });
-        }, observerOptions);
-
-        document.querySelectorAll('.fade-in').forEach(el => {
-            observer.observe(el);
-        });
-
-        // 平滑滚动
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
-
-        // 导航栏滚动效果
-        window.addEventListener('scroll', () => {
-            const nav = document.querySelector('nav');
-            if (window.scrollY > 50) {
-                nav.style.boxShadow = '0 5px 30px rgba(108, 92, 231, 0.15)';
+            };
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(done).catch(fallback);
             } else {
-                nav.style.boxShadow = '0 2px 20px rgba(108, 92, 231, 0.08)';
+                fallback();
             }
-        });
-    </script>
-
-    <!-- 独立兜底：无论上方脚本是否异常，保证所有 fade-in 最终显现、可点击 -->
-    <script>
-    (function () {
-        function revealAll() {
-            try {
-                document.querySelectorAll('.fade-in:not(.visible)').forEach(function (el) {
-                    el.classList.add('visible');
-                });
-            } catch (e) {}
         }
-        if (!('IntersectionObserver' in window)) revealAll();
-        window.addEventListener('load', function () { setTimeout(revealAll, 1200); });
-        setTimeout(revealAll, 2500); // 最终保险，2.5s 后一定全部显示
+        document.querySelectorAll('[data-copy]').forEach(function (el) {
+            el.addEventListener('click', function () {
+                copyText(el.getAttribute('data-copy'), el.getAttribute('data-label'));
+            });
+        });
+
+        /* ---------- 让野鸡挑一个：三个产品加七个其他项目，一起抽 ---------- */
+        var pick = document.getElementById('pick');
+        var pool = Array.prototype.slice.call(document.querySelectorAll('[data-pick]'));
+        var lastPick = -1;
+
+        if (pick && pool.length > 1) {
+            pick.addEventListener('click', function (event) {
+                event.preventDefault();
+                var i = Math.floor(Math.random() * pool.length);
+                while (i === lastPick) { i = Math.floor(Math.random() * pool.length); }
+                lastPick = i;
+
+                var target = pool[i];
+                var nameEl = target.querySelector('.plate__name, .row__name');
+                var name = nameEl ? (nameEl.textContent || '').trim() : '这个';
+                var kind = target.classList.contains('plate') ? '产品' : '其他项目';
+
+                pool.forEach(function (el) { el.classList.toggle('is-picked', el === target); });
+                showToast('挑中了《' + name + '》，是个' + kind + '，就在下面。');
+
+                var box = target.getBoundingClientRect();
+                var inView = box.top > -20 && box.bottom < window.innerHeight + 20;
+                if (!inView) {
+                    target.scrollIntoView({ behavior: prefersCalm() ? 'auto' : 'smooth', block: 'start' });
+                }
+            });
+        }
+
+        /* ---------- 手机截图随滚动轻轻飘一点 ---------- */
+        if (!prefersCalm() && window.requestAnimationFrame) {
+            var shots = Array.prototype.slice.call(document.querySelectorAll('.plate__shot .shot--a'));
+            var progress = document.getElementById('progress');
+            var ticking = false;
+
+            var drift = function () {
+                ticking = false;
+                var mid = window.innerHeight / 2;
+                shots.forEach(function (el) {
+                    var box = el.getBoundingClientRect();
+                    if (box.bottom < -200 || box.top > window.innerHeight + 200) return;
+                    var offset = (box.top + box.height / 2 - mid) / window.innerHeight;
+                    var value = Math.max(-30, Math.min(30, offset * -44));
+                    el.style.setProperty('--drift', value.toFixed(1) + 'px');
+                });
+                if (progress) {
+                    var span = document.documentElement.scrollHeight - window.innerHeight;
+                    var share = span > 0 ? window.scrollY / span : 0;
+                    progress.style.setProperty('--p', Math.max(0, Math.min(1, share)) * 100 + '%');
+                }
+            };
+            var onScroll = function () {
+                if (ticking) return;
+                ticking = true;
+                window.requestAnimationFrame(drift);
+            };
+            window.addEventListener('scroll', onScroll, { passive: true });
+            window.addEventListener('resize', onScroll);
+            drift();
+        }
+
+        /* ---------- 钉子条：滚到哪一件产品，哪一个名字就亮 ---------- */
+        var stickLinks = Array.prototype.slice.call(document.querySelectorAll('[data-stick]'));
+        if (stickLinks.length && 'IntersectionObserver' in window) {
+            var stickIo = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (!entry.isIntersecting) return;
+                    var id = entry.target.getAttribute('id');
+                    stickLinks.forEach(function (a) {
+                        a.classList.toggle('is-now', a.getAttribute('data-stick') === id);
+                    });
+                });
+            }, { rootMargin: '-40% 0px -45% 0px', threshold: 0 });
+            stickLinks.forEach(function (a) {
+                var plate = document.getElementById(a.getAttribute('data-stick'));
+                if (plate) stickIo.observe(plate);
+            });
+            stickLinks[0].classList.add('is-now');
+        }
     })();
-    </script>
+</script>
 </body>
 </html>
